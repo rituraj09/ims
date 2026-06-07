@@ -30,7 +30,9 @@ class SettingController extends Controller
         foreach ($request->except('_token', '_method') as $key => $value) {
             Setting::set("general.{$key}", $value);
         }
-
+        Setting::set('asset_tag.format', $request->asset_tag_format);
+        Setting::set('asset_tag.org_code', $request->asset_tag_org_code);
+        Setting::set('asset_tag.seq_digits', $request->asset_tag_seq_digits);
         Setting::clearCache();
 
         return back()->with('success', 'General settings updated successfully.');

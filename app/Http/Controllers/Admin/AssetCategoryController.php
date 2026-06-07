@@ -80,6 +80,10 @@ class AssetCategoryController extends Controller
         $validated['updated_by'] = auth()->id();
 
         $old = $category->toArray();
+        $validated['sub_categories'] = json_decode(
+            $request->sub_categories,
+            true
+        ) ?? [];
         $category->update($validated);
 
         ActivityLog::log('updated', 'categories', $category, $old, $category->toArray());

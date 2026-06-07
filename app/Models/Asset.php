@@ -88,7 +88,10 @@ class Asset extends Model
         'depreciation_rate'   => 'decimal:2',
         'disposal_value'      => 'decimal:2',
     ];
-
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
     // ── Relationships ─────────────────────────────────────────────────────
 
     public function category()

@@ -24,3 +24,4 @@ if (!function_exists('format_date')) {
         return \Carbon\Carbon::parse($date)->format($format);
     }
 }
+

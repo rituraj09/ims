@@ -61,6 +61,7 @@ class AssetController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:200'],
             'asset_type'          => ['nullable', 'string', 'max:50'],
@@ -124,6 +125,9 @@ class AssetController extends Controller
 
     public function show(Asset $asset): View
     {
+        $departments = Department::active()->get();
+        $employees   = \App\Models\User::active()->where('status', 'active')->get();
+
         $asset->load([
             'category', 'vendor',
             'assignedDepartment', 'assignedEmployee.designation',
@@ -134,7 +138,7 @@ class AssetController extends Controller
             'createdBy', 'updatedBy',
         ]);
 
-        return view('admin.assets.show', compact('asset'));
+        return view('admin.assets.show', compact('asset', 'departments', 'employees'));
     }
 
     public function edit(Asset $asset): View
@@ -152,6 +156,7 @@ class AssetController extends Controller
 
     public function update(Request $request, Asset $asset): RedirectResponse
     {
+
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:200'],
             'asset_type'          => ['nullable', 'string', 'max:50'],
@@ -204,6 +209,7 @@ class AssetController extends Controller
 
     public function destroy(Asset $asset): RedirectResponse
     {
+
         if ($asset->status === 'in_use') {
             return back()->with('error', 'Cannot delete an asset that is currently in use.');
         }

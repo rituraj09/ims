@@ -14,7 +14,7 @@ class SuperAdminSeeder extends Seeder
         $superAdminRole = Role::where('name', 'super_admin')->firstOrFail();
 
         User::firstOrCreate(
-            ['email' => 'superadmin@govoffice.gov.in'],
+            ['email' => 'admin@admin.com'],
             [
                 'employee_id'    => 'SA-0001',
                 'name'           => 'Super Administrator',
@@ -23,7 +23,7 @@ class SuperAdminSeeder extends Seeder
                 'role_id'        => $superAdminRole->id,
                 'is_system_user' => true,
                 'status'         => 'active',
-                'password'       => bcrypt('Admin@1234'),
+                'password'       => bcrypt('123456'),
                 'email_verified_at' => now(),
             ]
         );

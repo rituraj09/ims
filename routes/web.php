@@ -72,57 +72,82 @@ Route::middleware(['auth', 'user.status'])->group(function () {
         // ── Designations ─────────────────────────
         Route::middleware('permission:users.view')
             ->resource('designations', \App\Http\Controllers\Admin\DesignationController::class);
+
+
         // ── Assets ───────────────────────────────
         Route::prefix('assets')->name('assets.')
-             ->middleware('permission:assets.view')
-             ->group(function () {
+            ->middleware('permission:assets.view')
+            ->group(function () {
 
-            Route::get('/',              [AssetController::class, 'index'])
-                 ->name('index');
-            Route::get('/{asset}',       [AssetController::class, 'show'])
-                 ->name('show');
+            // List
+            Route::get('/', [AssetController::class, 'index'])
+                ->name('index');
 
+            // Create
             Route::middleware('permission:assets.create')->group(function () {
-                Route::get('/create',    [AssetController::class, 'create'])
-                     ->name('create');
-                Route::post('/',         [AssetController::class, 'store'])
-                     ->name('store');
-            });
 
-            Route::middleware('permission:assets.edit')->group(function () {
-                Route::get('/{asset}/edit',  [AssetController::class, 'edit'])
-                     ->name('edit');
-                Route::put('/{asset}',       [AssetController::class, 'update'])
-                     ->name('update');
-            });
+                Route::get('/create', [AssetController::class, 'create'])
+                    ->name('create');
 
-            Route::delete('/{asset}', [AssetController::class, 'destroy'])
-                 ->name('destroy')
-                 ->middleware('permission:assets.delete');
-
-            // Assignment Actions
-            Route::middleware('permission:assets.assign')->group(function () {
-                Route::get('/{asset}/assign',
-                    [AssetAssignmentController::class, 'create'])
-                     ->name('assign');
-                Route::post('/{asset}/assign',
-                    [AssetAssignmentController::class, 'store'])
-                     ->name('assign.store');
-                Route::post('/{asset}/takeover',
-                    [AssetAssignmentController::class, 'takeover'])
-                     ->name('takeover');
-                Route::post('/{asset}/transfer',
-                    [AssetAssignmentController::class, 'transfer'])
-                     ->name('transfer');
+                Route::post('/', [AssetController::class, 'store'])
+                    ->name('store');
             });
 
             // Utilities
-            Route::get('/generate-tag',      [AssetController::class, 'generateTag'])
-                 ->name('generate-tag');
-            Route::get('/{asset}/qr',        [AssetController::class, 'generateQr'])
-                 ->name('qr');
-            Route::get('/{asset}/print',     [AssetController::class, 'printLabel'])
-                 ->name('print');
+            Route::get('/generate-tag', [AssetController::class, 'generateTag'])
+                ->name('generate-tag');
+
+            // Assignment Actions
+            Route::middleware('permission:assets.assign')->group(function () {
+
+                Route::get('/{asset}/assign',
+                    [AssetAssignmentController::class, 'create'])
+                    ->name('assign');
+
+                Route::post('/{asset}/assign',
+                    [AssetAssignmentController::class, 'store'])
+                    ->name('assign.store');
+
+                Route::post('/{asset}/takeover',
+                    [AssetAssignmentController::class, 'takeover'])
+                    ->name('takeover');
+
+                Route::post('/{asset}/transfer',
+                    [AssetAssignmentController::class, 'transfer'])
+                    ->name('transfer');
+            });
+
+            // Edit
+            Route::middleware('permission:assets.edit')->group(function () {
+
+                Route::get('/{asset}/edit',
+                    [AssetController::class, 'edit'])
+                    ->name('edit');
+
+                Route::put('/{asset}',
+                    [AssetController::class, 'update'])
+                    ->name('update');
+            });
+
+            // QR & Print
+            Route::get('/{asset}/qr',
+                [AssetController::class, 'generateQr'])
+                ->name('qr');
+
+            Route::get('/{asset}/print',
+                [AssetController::class, 'printLabel'])
+                ->name('print');
+
+            // Show Asset
+            Route::get('/{asset}',
+                [AssetController::class, 'show'])
+                ->name('show');
+
+            // Delete
+            Route::delete('/{asset}',
+                [AssetController::class, 'destroy'])
+                ->middleware('permission:assets.delete')
+                ->name('destroy');
         });
 
         // ── Asset Assignments ──────────────────────
@@ -130,6 +155,7 @@ Route::middleware(['auth', 'user.status'])->group(function () {
             Route::get('/',
                 [AssetAssignmentController::class, 'index'])
                  ->name('index');
+
             Route::get('/{id}',
                 [AssetAssignmentController::class, 'show'])
                  ->name('show');

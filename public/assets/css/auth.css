@@ -90,8 +90,8 @@ body.auth-body {
 }
 
 .auth-org-name {
-    font-size: 13px;
-    opacity: 0.6;
+    font-size: 16px;
+    opacity: 0.8;
     margin-top: auto;
     padding-top: 20px;
     border-top: 1px solid rgba(255,255,255,0.15);

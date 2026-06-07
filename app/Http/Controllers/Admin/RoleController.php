@@ -44,7 +44,7 @@ class RoleController extends Controller
             description: "Permissions updated for role: {$role->name}");
 
         // Clear permission cache
-        app()[\Illuminate\Contracts\Auth\Access\Gate::class]->clearResolvedInstances();
+        // app()[\Illuminate\Contracts\Auth\Access\Gate::class]->clearResolvedInstances();
 
         return back()->with('success', "Permissions updated for {$role->display_name}.");
     }

@@ -81,15 +81,36 @@ class UserController extends Controller
 
     public function edit(User $user): View
     {
+        if (
+            $user->isSuperAdmin() &&
+            !auth()->user()->isSuperAdmin()
+        ) {
+            abort(403, 'You cannot edit a Super Admin.');
+        }
+
         $roles        = Role::all();
         $departments  = Department::active()->get();
         $designations = Designation::active()->ordered()->get();
 
-        return view('admin.users.edit', compact('user', 'roles', 'departments', 'designations'));
+        return view('admin.users.edit', compact(
+            'user',
+            'roles',
+            'departments',
+            'designations'
+        ));
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
+        if (
+            $user->isSuperAdmin() &&
+            !auth()->user()->isSuperAdmin()
+        ) {
+            return back()->with(
+                'error',
+                'You cannot modify a Super Admin account.'
+            );
+        }
         $validated = $request->validate([
             'name'           => ['required', 'string', 'max:150'],
             'email'          => ['required', 'email', 'max:150', 'unique:users,email,' . $user->id],
@@ -134,6 +155,12 @@ class UserController extends Controller
 
     public function toggleStatus(User $user): RedirectResponse
     {
+        if ($user->isSuperAdmin()) {
+            return back()->with(
+                'error',
+                'Super Admin status cannot be changed.'
+            );
+        }
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot change your own status.');
         }

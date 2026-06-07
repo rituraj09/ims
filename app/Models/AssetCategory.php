@@ -129,4 +129,8 @@ class AssetCategory extends Model
     {
         return $query->where('status', 'active');
     }
+    public function getSubCategoryIdAttribute()
+    {
+        return data_get($this->sub_category, 'id');
+    }
 }

@@ -16,16 +16,37 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class AssetAssignmentController extends Controller
 {
-    public function index(Request $request): View
+   public function index(Request $request): View
     {
         $assignments = AssetAssignment::with([
-                'asset', 'toDepartment', 'toEmployee',
-                'fromDepartment', 'fromEmployee', 'authorizedBy'
+                'asset',
+                'toDepartment',
+                'toEmployee',
+                'fromDepartment',
+                'fromEmployee',
+                'authorizedBy'
             ])
-            ->when($request->type, fn($q) => $q->where('transaction_type', $request->type))
-            ->when($request->date_from, fn($q) => $q->whereDate('transaction_date', '>=', $request->date_from))
-            ->when($request->date_to, fn($q) => $q->whereDate('transaction_date', '<=', $request->date_to))
-            ->latest('transaction_date')->paginate(25);
+            ->when($request->type, fn($q) =>
+                $q->where('transaction_type', $request->type)
+            )
+            ->when($request->date_from, fn($q) =>
+                $q->whereDate('transaction_date', '>=', $request->date_from)
+            )
+            ->when($request->date_to, fn($q) =>
+                $q->whereDate('transaction_date', '<=', $request->date_to)
+            )
+            ->when($request->search, function ($q, $search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('form_no', 'like', "%{$search}%")
+                        ->orWhereHas('asset', function ($asset) use ($search) {
+                            $asset->where('asset_tag', 'like', "%{$search}%")
+                                ->orWhere('name', 'like', "%{$search}%"); // asset name field
+                        });
+                });
+            })
+            ->latest('created_at')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.assignments.index', compact('assignments'));
     }

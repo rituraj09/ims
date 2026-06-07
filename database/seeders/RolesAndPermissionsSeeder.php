@@ -61,6 +61,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // Settings
             ['name' => 'settings.view',   'display_name' => 'View Settings',   'module' => 'settings'],
             ['name' => 'settings.manage', 'display_name' => 'Manage Settings', 'module' => 'settings'],
+            ['name' => 'activity-logs', 'display_name' => 'View Activity Logs', 'module' => 'activity-logs'],
 
             // User Management
             ['name' => 'users.view',   'display_name' => 'View Users',   'module' => 'users'],
