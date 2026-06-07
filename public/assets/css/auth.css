@@ -218,7 +218,10 @@ body.auth-body {
     justify-content: center;
     margin: 0 auto;
 }
-
+.logo-white {
+    max-height: 50px;
+    filter: brightness(0) invert(1);
+}
 @media (max-width: 991.98px) {
     .auth-right { background: #fff; padding: 28px 20px; }
     .auth-form-container { max-width: 380px; }

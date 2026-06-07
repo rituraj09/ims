@@ -21,6 +21,8 @@ class AssetController extends Controller
 
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        $canSelectDepartment =  !$user->department_id ||   $user->role?->name === 'super_admin';
         $assets = Asset::with(['category', 'vendor', 'assignedDepartment', 'assignedEmployee'])
             ->when($request->status,      fn($q) => $q->where('status', $request->status))
             ->when($request->condition,   fn($q) => $q->where('condition', $request->condition))
@@ -43,25 +45,43 @@ class AssetController extends Controller
             ->groupBy('status')->pluck('total', 'status');
 
         return view('admin.assets.index', compact(
-            'assets', 'categories', 'departments', 'statusCounts'
+            'assets', 'categories', 'departments', 'statusCounts', 'canSelectDepartment'
         ));
     }
 
     public function create(): View
     {
+        $user = auth()->user();
+
+        $canChooseDepartment =
+            !$user->department_id ||
+            $user->role?->name === 'super_admin';
+
+
+
         $categories  = AssetCategory::active()->get();
         $vendors     = Vendor::active()->get();
         $departments = Department::active()->get();
         $employees   = \App\Models\User::active()->where('status', 'active')->get();
 
         return view('admin.assets.create', compact(
-            'categories', 'vendors', 'departments', 'employees'
+            'categories', 'vendors', 'departments', 'employees',
+            'canChooseDepartment'
         ));
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $user = auth()->user();
+        if (
+            $user->department_id &&
+            $user->role?->name !== 'super_admin'
+        ) {
+            $validated['assigned_department_id'] = $user->department_id;
+            $validated['assigned_to_type'] = 'department';
+        }
 
+        $validated['home_department_id']= $validated['assigned_department_id'];
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:200'],
             'asset_type'          => ['nullable', 'string', 'max:50'],
@@ -111,9 +131,20 @@ class AssetController extends Controller
             $validated['invoice_file'] = $request->file('invoice_file')
                 ->store('invoices', 'public');
         }
-
         $asset = Asset::create($validated);
+        if ($asset->assigned_department_id) {
 
+            AssetAssignment::create([
+                'asset_id'              => $asset->id,
+                'transaction_type'      => 'initial',
+                'to_type'               => 'department',
+                'to_department_id'      => $asset->assigned_department_id,
+                'transaction_date'      => now(),
+                'form_no'               => AssetAssignment::generateFormNo('transfer'),
+                'remarks'               => 'Initial asset registration',
+                'created_by'            => auth()->id(),
+            ]);
+        }
         // Calculate current value
         $asset->update(['current_value' => $asset->calculateCurrentValue()]);
 
@@ -143,6 +174,8 @@ class AssetController extends Controller
 
     public function edit(Asset $asset): View
     {
+        $user = auth()->user();
+        $canSelectDepartment =  !$user->department_id ||   $user->role?->name === 'super_admin';
         $categories  = AssetCategory::active()->get();
         $vendors     = Vendor::active()->get();
         $departments = Department::active()->get();
@@ -150,13 +183,12 @@ class AssetController extends Controller
         $subCategories = $asset->category?->active_sub_categories ?? [];
 
         return view('admin.assets.edit', compact(
-            'asset', 'categories', 'vendors', 'departments', 'employees', 'subCategories'
+            'asset', 'categories', 'vendors', 'departments', 'employees', 'subCategories','canSelectDepartment'
         ));
     }
 
     public function update(Request $request, Asset $asset): RedirectResponse
     {
-
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:200'],
             'asset_type'          => ['nullable', 'string', 'max:50'],
@@ -188,7 +220,11 @@ class AssetController extends Controller
             'location_room_no'    => ['nullable', 'string'],
             'assigned_on'         => ['nullable', 'date'],
         ]);
-
+        $user = auth()->user();
+        if ($user->role?->name === 'super_admin')
+        {
+            $validated['home_department_id']= $validated['assigned_department_id'];
+        }
         $validated['under_amc']   = $request->boolean('under_amc');
         $validated['updated_by']  = auth()->id();
 
@@ -196,7 +232,6 @@ class AssetController extends Controller
             $validated['invoice_file'] = $request->file('invoice_file')
                 ->store('invoices', 'public');
         }
-
         $old = $asset->toArray();
         $asset->update($validated);
         $asset->update(['current_value' => $asset->calculateCurrentValue()]);

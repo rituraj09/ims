@@ -341,7 +341,75 @@
                     </div>
                 </div>
 
-
+                @if ($canSelectDepartment)
+                    {{-- ============================================================ CARD 3 — Assignment Details ============================================================ --}} <div class="card mb-3">
+                        <div class="card-header"> <i class="fas fa-share-nodes text-warning"></i> Assignment Details
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3"> {{-- Assign To Type --}} <div class="col-md-6"> <label
+                                        class="form-label">Assign To</label> <select name="assigned_to_type"
+                                        id="assignedToType" class="form-select">
+                                        <option value=""
+                                            {{ old('assigned_to_type', $asset->assigned_to_type) === '' ? 'selected' : '' }}>
+                                            -- Not Assigned -- </option>
+                                        <option value="department"
+                                            {{ old('assigned_to_type', $asset->assigned_to_type) === 'department' ? 'selected' : '' }}>
+                                            Department / Branch </option>
+                                        <option value="employee"
+                                            {{ old('assigned_to_type', $asset->assigned_to_type) === 'employee' ? 'selected' : '' }}>
+                                            Employee </option>
+                                    </select> </div> {{-- Assigned On --}} <div class="col-md-6" id="assignedOnField">
+                                    <label class="form-label">Assigned On</label> <input type="text"
+                                        name="assigned_on" class="form-control datepicker"
+                                        value="{{ old('assigned_on', $asset->assigned_on ? \Carbon\Carbon::parse($asset->assigned_on)->format('d/m/Y') : '') }}">
+                                </div> {{-- Department --}} <div
+                                    class="col-md-6 {{ old('assigned_to_type', $asset->assigned_to_type) === 'department' ? '' : 'd-none' }}"
+                                    id="deptField"> <label class="form-label"> Department <span
+                                            class="text-danger">*</span>
+                                    </label> <select name="assigned_department_id" class="form-select select2">
+                                        <option value="">-- Select Department --</option>
+                                        @foreach ($departments as $dept)
+                                            <option value="{{ $dept->id }}"
+                                                {{ old('assigned_department_id', $asset->assigned_department_id) == $dept->id ? 'selected' : '' }}>
+                                                {{ $dept->name }} </option>
+                                        @endforeach
+                                    </select> </div> {{-- Employee --}} <div
+                                    class="col-md-6 {{ old('assigned_to_type', $asset->assigned_to_type) === 'employee' ? '' : 'd-none' }}"
+                                    id="empField"> <label class="form-label"> Employee <span
+                                            class="text-danger">*</span>
+                                    </label> <select name="assigned_employee_id" class="form-select select2">
+                                        <option value="">-- Select Employee --</option>
+                                        @foreach ($employees as $emp)
+                                            <option value="{{ $emp->id }}"
+                                                {{ old('assigned_employee_id', $asset->assigned_employee_id) == $emp->id ? 'selected' : '' }}>
+                                                {{ $emp->name }}
+                                                {{ $emp->employee_id ? '(' . $emp->employee_id . ')' : '' }} </option>
+                                        @endforeach
+                                    </select> </div> {{-- Location: Building --}} <div class="col-md-4"> <label
+                                        class="form-label">Building</label> <input type="text"
+                                        name="location_building" class="form-control"
+                                        value="{{ old('location_building', $asset->location_building) }}"
+                                        placeholder="Building name"> </div> {{-- Location: Block --}} <div class="col-md-4">
+                                    <label class="form-label">Block</label> <input type="text" name="location_block"
+                                        class="form-control" value="{{ old('location_block', $asset->location_block) }}"
+                                        placeholder="Block/Wing">
+                                </div> {{-- Location: Floor --}} <div class="col-md-2"> <label
+                                        class="form-label">Floor</label>
+                                    <input type="text" name="location_floor" class="form-control"
+                                        value="{{ old('location_floor', $asset->location_floor) }}"
+                                        placeholder="Floor no">
+                                </div> {{-- Location: Room --}} <div class="col-md-2"> <label class="form-label">Room
+                                        No.</label> <input type="text" name="location_room_no" class="form-control"
+                                        value="{{ old('location_room_no', $asset->location_room_no) }}"
+                                        placeholder="Room">
+                                </div> {{-- Assignment Notes --}} <div class="col-12"> <label class="form-label">Assignment
+                                        Notes</label>
+                                    <textarea name="assignment_notes" class="form-control" rows="2" placeholder="Any notes about assignment...">{{ old('assignment_notes', $asset->assignment_notes) }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 
                 {{-- ============================================================
                      CARD 4 — Audit Trail (Read-Only)

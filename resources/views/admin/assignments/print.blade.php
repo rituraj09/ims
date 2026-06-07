@@ -251,9 +251,14 @@
 
         {{-- Header --}}
         <div class="header">
-            <div class="header-logo">🏛</div>
+            <div class="auth-logo mb-1">
+                @if (setting('organisation.org_logo'))
+                    <img src="{{ asset('storage/' . setting('organisation.org_logo')) }}" alt="Logo"
+                        style="max-height:50px;" class="logo-white">
+                @endif
+            </div>
             <div class="header-text">
-                <div class="header-org">Government of Assam</div>
+                <div class="header-org">{{ config('organisation.govt') }}</div>
                 <div class="header-dept">Asset Management Division</div>
                 <div style="font-size:11px;color:#666;margin-top:2px;">
                     Asset Handover / Takeover / Transfer Form

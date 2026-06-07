@@ -57,7 +57,7 @@
                     <div class="auth-logo mb-1">
                         @if (setting('organisation.org_logo'))
                             <img src="{{ asset('storage/' . setting('organisation.org_logo')) }}" alt="Logo"
-                                style="max-height:50px;">
+                                style="max-height:50px;" class="logo-white">
                         @endif
                     </div>
                     {{ setting('organisation.org_name', '') }}

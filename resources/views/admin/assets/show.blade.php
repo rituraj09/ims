@@ -124,6 +124,7 @@
                                 </div>
                             @endif
                         @endforeach
+
                     </div>
                 </div>
             </div>
@@ -342,6 +343,24 @@
                             Not currently assigned
                         </div>
                     @endif
+                </div>
+            </div>
+
+            {{-- Home Department --}}
+            <div class="card mb-3">
+                <div class="card-header">
+                    <i class="fas fa-home text-info"></i> Home Branch
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+
+                        <div>
+                            <div class="text-xs text-muted fw-700 text-uppercase">
+                                {{ $asset->homeDepartment?->name ?? '-' }}
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
             </div>
 

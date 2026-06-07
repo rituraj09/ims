@@ -135,7 +135,8 @@ class AssetAssignmentController extends Controller
             'from_type'           => $asset->assigned_to_type,
             'from_department_id'  => $asset->assigned_department_id,
             'from_employee_id'    => $asset->assigned_employee_id,
-            'to_type'             => 'store',
+            'to_type' => 'department',
+            'to_department_id' => $asset->home_department_id,
             'condition_at_return' => $validated['condition_at_return'],
             'transaction_date'    => $validated['transaction_date'],
             'form_no'             => AssetAssignment::generateFormNo('takeover'),
@@ -144,14 +145,14 @@ class AssetAssignmentController extends Controller
         ]);
 
         $asset->update([
-            'status'                 => 'available',
-            'assigned_to_type'       => null,
-            'assigned_department_id' => null,
+            'status'                 => Asset::STATUS_AVAILABLE,
+            'assigned_to_type'       => 'department',
+            'assigned_department_id' => $asset->home_department_id,
             'assigned_employee_id'   => null,
             'location_building'      => null,
             'location_floor'         => null,
             'location_room_no'       => null,
-            'assigned_on'            => null,
+            'assigned_on'            => now(),
         ]);
 
         ActivityLog::log('takeover', 'assets', $asset);

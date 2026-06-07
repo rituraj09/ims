@@ -64,6 +64,7 @@ class Asset extends Model
         'location_room_no',
         'assigned_on',
         'assignment_notes',
+        'home_department_id',
         // Disposal
         'disposed_on',
         'disposal_method',
@@ -300,5 +301,12 @@ class Asset extends Model
             'condemned' => 'dark',
             default     => 'secondary',
         };
+    }
+    public function homeDepartment()
+    {
+        return $this->belongsTo(
+            Department::class,
+            'home_department_id'
+        );
     }
 }
