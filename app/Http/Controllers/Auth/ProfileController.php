@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -59,12 +60,28 @@ class ProfileController extends Controller
     public function updatePhoto(Request $request): RedirectResponse
     {
         $request->validate([
-            'photo' => ['required', 'image', 'max:2048'],
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ]);
 
-        $path = $request->file('photo')->store('profile-photos', 'public');
-        auth()->user()->update(['profile_photo' => $path]);
+        $user = auth()->user();
 
-        return back()->with('success', 'Profile photo updated.');
+        // delete old photo
+        if ($user->profile_photo &&
+            Storage::disk('public')->exists($user->profile_photo)) {
+
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+
+        $path = $request->file('photo')
+            ->store('profile-photos', 'public');
+
+        $user->update([
+            'profile_photo' => $path,
+        ]);
+
+        return back()->with(
+            'success',
+            'Profile photo updated successfully.'
+        );
     }
 }

@@ -118,6 +118,7 @@ class AssetAssignment extends Model
     public static function generateFormNo(string $type): string
     {
         $prefix = match ($type) {
+            'initial'    => 'IL',
             'handover'    => 'HO',
             'takeover'    => 'TO',
             'transfer'    => 'TR',

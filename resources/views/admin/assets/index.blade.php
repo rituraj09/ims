@@ -159,8 +159,7 @@
                             <th>Make/Model</th>
                             <th>Status</th>
                             <th>Condition</th>
-                            <th>Assigned To</th>
-                            <th>Purchase Date</th>
+                            <th>Current location</th>
                             <th width="100">Actions</th>
                         </tr>
                     </thead>
@@ -236,9 +235,6 @@
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td class="text-sm text-muted">
-                                    {{ $asset->purchase_date?->format('d/m/Y') ?? '—' }}
-                                </td>
                                 <td>
                                     <div class="d-flex gap-1">
                                         <a href="{{ route('admin.assets.show', $asset) }}"
@@ -246,14 +242,14 @@
                                             title="View">
                                             <i class="fas fa-eye fa-xs"></i>
                                         </a>
-                                        @can('assets.edit')
+                                        @can('edit', $asset)
                                             <a href="{{ route('admin.assets.edit', $asset) }}"
                                                 class="btn btn-icon btn-sm btn-outline-primary" data-bs-toggle="tooltip"
                                                 title="Edit">
                                                 <i class="fas fa-pen fa-xs"></i>
                                             </a>
                                         @endcan
-                                        @can('assets.assign')
+                                        @can('assign', $asset)
                                             @if ($asset->status === 'available')
                                                 <a href="{{ route('admin.assets.assign', $asset) }}"
                                                     class="btn btn-icon btn-sm btn-outline-success" data-bs-toggle="tooltip"

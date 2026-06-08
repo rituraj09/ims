@@ -8,6 +8,7 @@ use App\Models\Asset;
 use App\Models\AssetCategory;
 use App\Models\Department;
 use App\Models\Vendor;
+use App\Models\AssetAssignment;
 use App\Models\ActivityLog;
 use App\Services\AssetTagService;
 use Illuminate\Http\Request;
@@ -51,6 +52,9 @@ class AssetController extends Controller
 
     public function create(): View
     {
+
+        $user = auth()->user();
+        $canSelectDepartment =  !$user->department_id ||   $user->role?->name === 'super_admin';
         $user = auth()->user();
 
         $canChooseDepartment =
@@ -66,22 +70,13 @@ class AssetController extends Controller
 
         return view('admin.assets.create', compact(
             'categories', 'vendors', 'departments', 'employees',
-            'canChooseDepartment'
+            'canChooseDepartment','canSelectDepartment'
         ));
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $user = auth()->user();
-        if (
-            $user->department_id &&
-            $user->role?->name !== 'super_admin'
-        ) {
-            $validated['assigned_department_id'] = $user->department_id;
-            $validated['assigned_to_type'] = 'department';
-        }
 
-        $validated['home_department_id']= $validated['assigned_department_id'];
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:200'],
             'asset_type'          => ['nullable', 'string', 'max:50'],
@@ -104,8 +99,6 @@ class AssetController extends Controller
             'depreciation_rate'   => ['nullable', 'numeric', 'min:0', 'max:100'],
             'status'              => ['required', 'in:available,in_use,under_maintenance,disposed,lost,transferred'],
             'condition'           => ['required', 'in:new,good,fair,poor,condemned'],
-            'assigned_to_type'    => ['nullable', 'in:department,employee'],
-            'assigned_department_id' => ['nullable', 'exists:departments,id'],
             'assigned_employee_id'   => ['nullable', 'exists:users,id'],
             'location_building'   => ['nullable', 'string', 'max:100'],
             'location_block'      => ['nullable', 'string', 'max:50'],
@@ -131,6 +124,19 @@ class AssetController extends Controller
             $validated['invoice_file'] = $request->file('invoice_file')
                 ->store('invoices', 'public');
         }
+
+         $user = auth()->user();
+        if (
+            $user->department_id &&
+            $user->role?->name !== 'super_admin'
+        ) {
+            $validated['assigned_department_id'] = $user->department_id;
+            $validated['assigned_to_type'] = 'department';
+
+        }
+
+        $validated['home_department_id']= $validated['assigned_department_id'];
+
         $asset = Asset::create($validated);
         if ($asset->assigned_department_id) {
 
@@ -140,7 +146,7 @@ class AssetController extends Controller
                 'to_type'               => 'department',
                 'to_department_id'      => $asset->assigned_department_id,
                 'transaction_date'      => now(),
-                'form_no'               => AssetAssignment::generateFormNo('transfer'),
+                'form_no'               => AssetAssignment::generateFormNo('initial'),
                 'remarks'               => 'Initial asset registration',
                 'created_by'            => auth()->id(),
             ]);
@@ -174,6 +180,7 @@ class AssetController extends Controller
 
     public function edit(Asset $asset): View
     {
+         $this->authorize('edit', $asset);
         $user = auth()->user();
         $canSelectDepartment =  !$user->department_id ||   $user->role?->name === 'super_admin';
         $categories  = AssetCategory::active()->get();
@@ -189,6 +196,7 @@ class AssetController extends Controller
 
     public function update(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorize('edit', $asset);
         $validated = $request->validate([
             'name'                => ['required', 'string', 'max:200'],
             'asset_type'          => ['nullable', 'string', 'max:50'],

@@ -78,7 +78,7 @@
                                     <option value="available"
                                         {{ old('status', 'available') === 'available' ? 'selected' : '' }}>Available
                                     </option>
-                                    <option value="in_use" {{ old('status') === 'in_use' ? 'selected' : '' }}>In
+                                    {{-- <option value="in_use" {{ old('status') === 'in_use' ? 'selected' : '' }}>In
                                         Use</option>
                                     <option value="under_maintenance"
                                         {{ old('status') === 'under_maintenance' ? 'selected' : '' }}>Under Maintenance
@@ -86,7 +86,7 @@
                                     <option value="disposed" {{ old('status') === 'disposed' ? 'selected' : '' }}>
                                         Disposed</option>
                                     <option value="lost" {{ old('status') === 'lost' ? 'selected' : '' }}>
-                                        Lost</option>
+                                        Lost</option> --}}
                                 </select>
                             </div>
 

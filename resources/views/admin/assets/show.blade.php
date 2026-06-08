@@ -14,7 +14,7 @@
 
 @section('page-actions')
     <div class="d-flex gap-2 flex-wrap">
-        @can('assets.assign')
+        @can('assign', $asset)
             @if ($asset->status === 'available')
                 <a href="{{ route('admin.assets.assign', $asset) }}" class="btn btn-success btn-sm">
                     <i class="fas fa-share"></i> Assign
@@ -29,7 +29,7 @@
                 </button>
             @endif
         @endcan
-        @can('assets.edit')
+        @can('edit', $asset)
             <a href="{{ route('admin.assets.edit', $asset) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-pen"></i> Edit
             </a>
@@ -368,11 +368,13 @@
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="fas fa-screwdriver-wrench text-warning"></i> Maintenance</span>
-                    @can('maintenance.create')
-                        <a href="{{ route('admin.maintenances.create', ['asset_id' => $asset->id]) }}"
-                            class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-plus"></i>
-                        </a>
+                    @can('edit', $asset)
+                        @can('maintenance.create')
+                            <a href="{{ route('admin.maintenances.create', ['asset_id' => $asset->id]) }}"
+                                class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                        @endcan
                     @endcan
                 </div>
                 <div class="card-body p-0">

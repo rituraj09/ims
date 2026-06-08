@@ -10,7 +10,9 @@ use App\Models\Permission;
 
 class AuthServiceProvider extends ServiceProvider
 {
-    protected $policies = [];
+    protected $policies = [
+         \App\Models\Asset::class => \App\Policies\AssetPolicy::class,
+    ];
 
     public function boot(): void
     {

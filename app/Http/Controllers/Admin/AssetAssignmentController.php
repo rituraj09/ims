@@ -53,6 +53,7 @@ class AssetAssignmentController extends Controller
 
     public function create(Asset $asset): View
     {
+
         $departments = Department::active()->get();
         $employees   = User::active()->get();
 
@@ -163,6 +164,7 @@ class AssetAssignmentController extends Controller
 
     public function transfer(Request $request, Asset $asset): RedirectResponse
     {
+        $this->authorize('transfer', $asset);
         $validated = $request->validate([
             'to_type'             => ['required', 'in:department,employee'],
             'to_department_id'    => ['required_if:to_type,department', 'nullable'],

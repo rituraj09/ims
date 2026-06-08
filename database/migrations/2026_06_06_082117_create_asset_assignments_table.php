@@ -16,6 +16,7 @@ return new class extends Migration
 
             // Type of transaction
             $table->enum('transaction_type', [
+                'initial',     // Asset at initial Entry
                 'handover',     // Asset assigned to dept/employee
                 'takeover',     // Asset taken back from dept/employee
                 'transfer',     // Asset transferred between dept/employees

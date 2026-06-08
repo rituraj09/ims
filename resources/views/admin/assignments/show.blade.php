@@ -288,21 +288,30 @@
 
                         </a>
                     @else
-                        <form action="{{ route('admin.assignments.upload-form', $assignment->id) }}" method="POST"
-                            enctype="multipart/form-data">
+                        @php
+                            $canManage =
+                                auth()->user()->role?->name === 'super_admin' ||
+                                auth()->user()->department_id === $assignment->asset->home_department_id;
+                        @endphp
+                        @if ($canManage)
+                            <form action="{{ route('admin.assignments.upload-form', $assignment->id) }}" method="POST"
+                                enctype="multipart/form-data">
 
-                            @csrf
+                                @csrf
 
-                            <div class="mb-3">
-                                <input type="file" name="form_file" class="form-control" required>
-                            </div>
+                                <div class="mb-3">
+                                    <input type="file" name="form_file" class="form-control" required>
+                                </div>
 
-                            <button class="btn btn-primary w-100">
-                                <i class="fas fa-upload"></i>
-                                Upload Signed Form
-                            </button>
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Signed Form
+                                </button>
 
-                        </form>
+                            </form>
+                        @else
+                            No Sign form available
+                        @endif
                     @endif
 
                 </div>
