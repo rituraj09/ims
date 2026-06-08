@@ -13,11 +13,11 @@
 @section('page-subtitle', 'Department Details')
 
 @section('page-actions')
-
+@can('departments.edit')
     <a href="{{ route('admin.departments.edit', $department) }}" class="btn btn-primary">
         <i class="fas fa-edit"></i> Edit
     </a>
-
+@endcan
     <a href="{{ route('admin.departments.index') }}" class="btn btn-outline-secondary">
         Back
     </a>

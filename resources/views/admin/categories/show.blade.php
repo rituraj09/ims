@@ -18,11 +18,12 @@
 
 @section('page-actions')
     <div class="d-flex gap-2">
-        <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-primary">
-            <i class="fas fa-edit"></i>
-            Edit
-        </a>
-
+         @can('categories.edit')
+                <a href="{{ route('admin.categories.edit', $category) }}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </a>
+        @endcan
         <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i>
             Back

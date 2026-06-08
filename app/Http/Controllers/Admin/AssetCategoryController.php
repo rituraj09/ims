@@ -61,6 +61,7 @@ class AssetCategoryController extends Controller
 
     public function edit(AssetCategory $category): View
     {
+        $this->authorize('edit', $category);
         $icons = $this->getIconList();
         return view('admin.categories.edit', compact('category', 'icons'));
     }
@@ -94,6 +95,7 @@ class AssetCategoryController extends Controller
 
     public function destroy(AssetCategory $category): RedirectResponse
     {
+        $this->authorize('delete', $category);
         if ($category->assets()->count() > 0) {
             return back()->with('error', 'Cannot delete category with existing assets.');
         }

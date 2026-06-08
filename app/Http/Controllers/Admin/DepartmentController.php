@@ -77,6 +77,7 @@ class DepartmentController extends Controller
 
     public function edit(Department $department): View
     {
+    $this->authorize('edit', $department);
         $departments = Department::active()
             ->whereNull('parent_id')
             ->where('id', '!=', $department->id)
@@ -117,6 +118,7 @@ class DepartmentController extends Controller
 
     public function destroy(Department $department): RedirectResponse
     {
+        $this->authorize('delete', $department);
         if ($department->assets()->count() > 0) {
             return back()->with('error', 'Cannot delete department with assigned assets.');
         }
