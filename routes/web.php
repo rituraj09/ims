@@ -360,6 +360,8 @@ Route::middleware(['auth', 'user.status'])->group(function () {
                     ->name('history');
                 Route::get('/export',                  [IPAllocationController::class, 'export'])
                     ->name('export');
+                Route::get('/{ipAllocation}/print', [IPAllocationController::class, 'print'])
+                    ->name('print');
             });
 
         });

@@ -179,7 +179,12 @@
                                     </button>
                                 </form>
                                 @endif
-
+                                <a href="{{ route('admin.ip-addresses.allocations.print', $a->id) }}"
+                                class="btn btn-outline-dark"
+                                title="Print Handover Form"
+                                target="_blank">
+                                    <i class="fas fa-print"></i>
+                                </a>
                                 {{-- Delete --}}
                                 <form method="POST"
                                     {{-- FIX 6: was admin.ip-allocation.destroy → admin.ip-addresses.allocations.destroy --}}

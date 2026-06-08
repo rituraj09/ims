@@ -212,4 +212,11 @@ class IpAllocationController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+    public function print($id)
+    {
+        // Load the allocation with necessary relationships
+        $allocation = \App\Models\IpAllocation::with(['user', 'ipAddress', 'allocatedBy'])->findOrFail($id);
+
+        return view('admin.ip-allocation.print', compact('allocation'));
+    }
 }
