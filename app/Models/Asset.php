@@ -118,13 +118,13 @@ class Asset extends Model
     public function assignments()
     {
         return $this->hasMany(AssetAssignment::class, 'asset_id')
-                    ->orderByDesc('transaction_date');
+                    ->orderByDesc('created_at');
     }
 
     public function latestAssignment()
     {
         return $this->hasOne(AssetAssignment::class, 'asset_id')
-                    ->latestOfMany('transaction_date');
+                    ->latestOfMany('created_at');
     }
 
     public function maintenances()
