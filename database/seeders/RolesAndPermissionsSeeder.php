@@ -61,6 +61,8 @@ class RolesAndPermissionsSeeder extends Seeder
             // Settings
             ['name' => 'settings.view',   'display_name' => 'View Settings',   'module' => 'settings'],
             ['name' => 'settings.manage', 'display_name' => 'Manage Settings', 'module' => 'settings'],
+
+            // Activity Logs
             ['name' => 'activity-logs', 'display_name' => 'View Activity Logs', 'module' => 'activity-logs'],
 
             // User Management
@@ -69,17 +71,29 @@ class RolesAndPermissionsSeeder extends Seeder
             ['name' => 'users.edit',   'display_name' => 'Edit Users',   'module' => 'users'],
             ['name' => 'users.delete', 'display_name' => 'Delete Users', 'module' => 'users'],
             ['name' => 'roles.manage', 'display_name' => 'Manage Roles & Permissions', 'module' => 'users'],
+
+            // ── IP Management ─────────────────────────────────
+            // FIX: was using 'group' key instead of 'module' key
+            ['name' => 'ip.view',   'display_name' => 'View IP Addresses',       'module' => 'ip'],
+            ['name' => 'ip.manage', 'display_name' => 'Manage IP & Allocations', 'module' => 'ip'],
         ];
 
+        // ── Upsert permissions safely ──────────────────────────────────────
         foreach ($permissions as $perm) {
-            Permission::firstOrCreate(['name' => $perm['name']], $perm);
+            Permission::updateOrCreate(
+                ['name' => $perm['name']],  // search key
+                [                           // values to set/update
+                    'display_name' => $perm['display_name'],
+                    'module'       => $perm['module'],
+                ]
+            );
         }
 
         // ── Roles ─────────────────────────────────────────────────────────
 
         $allPermissions = Permission::pluck('id')->toArray();
 
-        // Super Admin - All permissions
+        // ── Super Admin — everything ───────────────────────────────────────
         $superAdmin = Role::firstOrCreate(
             ['name' => 'super_admin'],
             [
@@ -90,7 +104,7 @@ class RolesAndPermissionsSeeder extends Seeder
         );
         $superAdmin->permissions()->sync($allPermissions);
 
-        // Admin - All except settings.manage and roles.manage
+        // ── Admin — all except roles.manage ───────────────────────────────
         $adminPermissions = Permission::whereNotIn('name', [
             'roles.manage',
         ])->pluck('id')->toArray();
@@ -105,18 +119,47 @@ class RolesAndPermissionsSeeder extends Seeder
         );
         $admin->permissions()->sync($adminPermissions);
 
-        // Author - View + Create + Edit (no delete/settings/users)
-        $authorPermissions = Permission::where('name', 'like', '%.view')
-            ->orWhere('name', 'like', '%.create')
-            ->orWhere('name', 'like', '%.edit')
-            ->whereNotIn('name', [
-                'settings.manage',
-                'roles.manage',
-                'users.create',
-                'users.edit',
-                'users.delete',
-            ])
-            ->pluck('id')->toArray();
+
+        // IT Admin
+        $itadmin = Role::firstOrCreate(
+            ['name' => 'IT admin'],
+            [
+                'display_name'   => 'IT Administrator',
+                'description'    => 'IT Administrative access',
+                'is_system_role' => true,
+            ]
+        );
+        $itadmin->permissions()->sync($adminPermissions);
+        //--end IT Admin
+
+        // ── Author — view + create + edit, guarded exclusions ─────────────
+        // FIX: original query had broken orWhere + whereNotIn scoping.
+        // Correct approach: use a grouped where closure.
+        $excludedFromAuthor = [
+            'settings.manage',
+            'roles.manage',
+            'users.create',
+            'users.edit',
+            'users.delete',
+            'assets.delete',
+            'categories.delete',
+            'departments.delete',
+            'employees.delete',
+            'vendors.delete',
+            'maintenance.delete',
+            'ip.manage',        // allocations management — author shouldn't have this
+        ];
+
+        $authorPermissions = Permission::where(function ($query) {
+                                    // FIX: group the OR conditions inside a closure
+                                    // so whereNotIn applies to BOTH conditions
+                                    $query->where('name', 'like', '%.view')
+                                          ->orWhere('name', 'like', '%.create')
+                                          ->orWhere('name', 'like', '%.edit');
+                                })
+                                ->whereNotIn('name', $excludedFromAuthor)
+                                ->pluck('id')
+                                ->toArray();
 
         $author = Role::firstOrCreate(
             ['name' => 'author'],
@@ -128,11 +171,12 @@ class RolesAndPermissionsSeeder extends Seeder
         );
         $author->permissions()->sync($authorPermissions);
 
-        // User - View only
+        // ── User — view only ──────────────────────────────────────────────
         $userPermissions = Permission::where('name', 'like', '%.view')
-            ->pluck('id')->toArray();
+            ->pluck('id')
+            ->toArray();
 
-        $user = Role::firstOrCreate(
+        $userRole = Role::firstOrCreate(
             ['name' => 'user'],
             [
                 'display_name'   => 'User',
@@ -140,8 +184,18 @@ class RolesAndPermissionsSeeder extends Seeder
                 'is_system_role' => true,
             ]
         );
-        $user->permissions()->sync($userPermissions);
+        $userRole->permissions()->sync($userPermissions);
 
         $this->command->info('✅ Roles and Permissions seeded successfully.');
+        $this->command->table(
+            ['Role', 'Permissions Count'],
+            [
+                ['Super Admin', count($allPermissions)],
+                ['Admin',       count($adminPermissions)],
+                ['IT Admin',       count($adminPermissions)],
+                ['Author',      count($authorPermissions)],
+                ['User',        count($userPermissions)],
+            ]
+        );
     }
 }

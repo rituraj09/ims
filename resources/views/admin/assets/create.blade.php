@@ -289,15 +289,13 @@
                             <div class="row g-3">
 
                                 <div class="col-md-6">
-                                    <label class="form-label">Assign To</label>
-                                    <select name="assigned_to_type" id="assignedToType" class="form-select">
+                                    <label class="form-label">Assign To <span class="text-danger">*</span></label>
+                                    <select name="assigned_to_type" id="assignedToType" class="form-select @error('category_id') is-invalid @enderror" required>
                                         <option value="">-- Not Assigned --</option>
                                         <option value="department"
                                             {{ old('assigned_to_type') === 'department' ? 'selected' : '' }}>Department /
                                             Branch</option>
-                                        <option value="employee"
-                                            {{ old('assigned_to_type') === 'employee' ? 'selected' : '' }}>Employee
-                                        </option>
+
                                     </select>
                                 </div>
 

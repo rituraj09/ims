@@ -131,12 +131,16 @@ class AssetController extends Controller
             $user->role?->name !== 'super_admin'
         ) {
             $validated['assigned_department_id'] = $user->department_id;
+            $validated['home_department_id']= $validated['assigned_department_id'];
             $validated['assigned_to_type'] = 'department';
 
         }
+        else
+        {
+            $validated['home_department_id']= $request->assigned_department_id;
+        }
 
-        $validated['home_department_id']= $validated['assigned_department_id'];
-
+dd( $validated);
         $asset = Asset::create($validated);
         if ($asset->assigned_department_id) {
 

@@ -12,59 +12,10 @@ class DepartmentSeeder extends Seeder
     {
         $departments = [
             [
-                'name'    => 'Administration',
-                'code'    => 'ADMIN',
-                'building'=> 'Main Block',
-                'floor'   => 'Ground Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Information Technology',
-                'code'    => 'IT',
-                'building'=> 'Main Block',
-                'floor'   => '1st Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Finance & Accounts',
-                'code'    => 'FIN',
-                'building'=> 'Main Block',
-                'floor'   => '2nd Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Human Resources',
-                'code'    => 'HR',
-                'building'=> 'Annexe Block',
-                'floor'   => 'Ground Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Public Relations',
-                'code'    => 'PR',
-                'building'=> 'Annexe Block',
-                'floor'   => '1st Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Legal Department',
-                'code'    => 'LEG',
-                'building'=> 'Main Block',
-                'floor'   => '3rd Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Planning & Development',
-                'code'    => 'PLD',
-                'building'=> 'Main Block',
-                'floor'   => '3rd Floor',
-                'status'  => 'active',
-            ],
-            [
-                'name'    => 'Stores & Purchase',
-                'code'    => 'STP',
-                'building'=> 'Store Building',
-                'floor'   => 'Ground Floor',
+                'name'    => 'Nazarat',
+                'code'    => 'NAZ',
+                'building'=> 'DC Office',
+                'floor'   => 'First Floor',
                 'status'  => 'active',
             ],
         ];

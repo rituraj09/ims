@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\BackupController;
 use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\IPAddressController;
+use App\Http\Controllers\Admin\IPAllocationController; // add this
 
 /* ═══════════════════════════════════════════════════════
    PUBLIC ROUTES - No Auth Required
@@ -312,6 +314,55 @@ Route::middleware(['auth', 'user.status'])->group(function () {
                  ->name('markAllRead');
         });
 
+
+        // ── IP Address Management ─────────────────────────────
+        Route::prefix('ip-addresses')
+            ->name('ip-addresses.')
+            ->group(function () {
+
+            // ── IP Pool (requires ip.view) ────────────────
+            Route::middleware('permission:ip.view')->group(function () {
+                Route::get('/',        [IPAddressController::class, 'index'])
+                    ->name('index');
+                Route::get('/export',  [IPAddressController::class, 'export'])
+                    ->name('export');
+            });
+
+            // ── IP Pool Write (requires ip.manage) ────────
+            Route::middleware('permission:ip.manage')->group(function () {
+                Route::post('/',             [IPAddressController::class, 'store'])
+                    ->name('store');
+                Route::put('/{ipAddress}',   [IPAddressController::class, 'update'])
+                    ->name('update');
+                Route::delete('/{ipAddress}',[IPAddressController::class, 'destroy'])
+                    ->name('destroy');
+                Route::post('/import',       [IPAddressController::class, 'import'])
+                    ->name('import');
+            });
+
+            // ── IP Allocations (requires ip.manage) ───────
+            Route::prefix('allocations')
+                ->name('allocations.')
+                ->middleware('permission:ip.manage')
+                ->group(function () {
+
+                Route::get('/',                        [IPAllocationController::class, 'index'])
+                    ->name('index');
+                Route::post('/',                       [IPAllocationController::class, 'store'])
+                    ->name('store');
+                Route::put('/{ipAllocation}',          [IPAllocationController::class, 'update'])
+                    ->name('update');
+                Route::delete('/{ipAllocation}',       [IPAllocationController::class, 'destroy'])
+                    ->name('destroy');
+                Route::post('/{ipAllocation}/release', [IPAllocationController::class, 'release'])
+                    ->name('release');
+                Route::get('/history/{ipAddress}',     [IPAllocationController::class, 'history'])
+                    ->name('history');
+                Route::get('/export',                  [IPAllocationController::class, 'export'])
+                    ->name('export');
+            });
+
+        });
         // ── AJAX Helpers ───────────────────────────
         Route::prefix('ajax')->name('ajax.')->group(function () {
             Route::get('/departments',

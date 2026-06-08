@@ -61,7 +61,7 @@ class AssetCategorySeeder extends Seeder
                     ['id' => Str::uuid(), 'name' => 'Ceiling Fan',     'code' => 'CFN', 'status' => 'active'],
                     ['id' => Str::uuid(), 'name' => 'Refrigerator',    'code' => 'RFG', 'status' => 'active'],
                     ['id' => Str::uuid(), 'name' => 'Water Purifier',  'code' => 'WPR', 'status' => 'active'],
-                    ['id' => Str::uuid(), 'name' => 'Microwave Oven',  'code' => 'MWV', 'status' => 'active'],
+                    ['id' => Str::uuid(), 'name' => 'Air Condition',  'code' => 'ARC', 'status' => 'active'],
                 ],
             ],
             [
@@ -73,10 +73,9 @@ class AssetCategorySeeder extends Seeder
                 'status'            => 'active',
                 'sub_categories'    => [
                     ['id' => Str::uuid(), 'name' => 'Car',      'code' => 'CAR', 'status' => 'active'],
+                    ['id' => Str::uuid(), 'name' => 'Suv',     'code' => 'SUV', 'status' => 'active'],
+                    ['id' => Str::uuid(), 'name' => 'Pick Up',     'code' => 'PIU', 'status' => 'active'],
                     ['id' => Str::uuid(), 'name' => 'Jeep',     'code' => 'JEP', 'status' => 'active'],
-                    ['id' => Str::uuid(), 'name' => 'Bus',      'code' => 'BUS', 'status' => 'active'],
-                    ['id' => Str::uuid(), 'name' => 'Truck',    'code' => 'TRK', 'status' => 'active'],
-                    ['id' => Str::uuid(), 'name' => 'Motorcycle','code' => 'MCY', 'status' => 'active'],
                 ],
             ],
             [
@@ -94,15 +93,7 @@ class AssetCategorySeeder extends Seeder
                     ['id' => Str::uuid(), 'name' => 'Fax Machine',    'code' => 'FAX', 'status' => 'active'],
                 ],
             ],
-            [
-                'name'              => 'Medical Equipment',
-                'code'              => 'MED',
-                'description'       => 'Medical and health-related equipment',
-                'icon'              => 'fas fa-stethoscope',
-                'depreciation_rate' => 15.00,
-                'status'            => 'active',
-                'sub_categories'    => [],
-            ],
+
             [
                 'name'              => 'Safety Equipment',
                 'code'              => 'SAF',

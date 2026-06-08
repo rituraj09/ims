@@ -30,80 +30,91 @@ class LoginController extends Controller
     /**
      * Handle login request
      */
-    public function login(Request $request): RedirectResponse
-    {
-        // Validate input
-        $request->validate([
-            'email'    => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-        ], [
-            'email.required'    => 'Email address is required.',
-            'email.email'       => 'Please enter a valid email address.',
-            'password.required' => 'Password is required.',
+   public function login(Request $request): RedirectResponse
+{
+    $request->validate([
+        'login'    => ['required', 'string'],
+        'password' => ['required', 'string'],
+    ], [
+        'login.required'    => 'Email Address or Mobile Number is required.',
+        'password.required' => 'Password is required.',
+    ]);
+
+    // Rate Limiting
+    $throttleKey = Str::lower($request->input('login'))
+                    . '|' . $request->ip();
+
+    if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+        $seconds = RateLimiter::availableIn($throttleKey);
+
+        throw ValidationException::withMessages([
+            'login' => "Too many login attempts. Please wait {$seconds} seconds.",
         ]);
-
-        // Rate Limiting - max 5 attempts per minute
-        $throttleKey = Str::lower($request->input('email'))
-                     . '|' . $request->ip();
-
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
-            $seconds = RateLimiter::availableIn($throttleKey);
-
-            throw ValidationException::withMessages([
-                'email' => "Too many login attempts. Please wait {$seconds} seconds.",
-            ]);
-        }
-
-        // Attempt authentication
-        $credentials = $request->only('email', 'password');
-        $remember    = $request->boolean('remember');
-
-        if (!Auth::attempt($credentials, $remember)) {
-            RateLimiter::hit($throttleKey, 60);
-
-            throw ValidationException::withMessages([
-                'email' => 'The provided credentials are incorrect.',
-            ]);
-        }
-
-        // Clear rate limiter on success
-        RateLimiter::clear($throttleKey);
-
-        $user = Auth::user();
-
-        // Check system user access
-        if (!$user->is_system_user) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'email' => 'You do not have system login access. Contact administrator.',
-            ]);
-        }
-
-        // Check account status
-        if ($user->status !== 'active') {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'email' => 'Your account is inactive. Contact administrator.',
-            ]);
-        }
-
-        // Regenerate session
-        $request->session()->regenerate();
-
-        // Log activity safely
-        try {
-            ActivityLog::log(
-                action      : 'login',
-                module      : 'auth',
-                description : "Logged in from IP: {$request->ip()}"
-            );
-        } catch (\Exception $e) {
-            // Don't block login if logging fails
-        }
-
-        return redirect()->intended(route('dashboard'))
-               ->with('success', "Welcome back, {$user->name}!");
     }
+
+    $login = trim($request->login);
+
+    // Determine login field
+    $field = filter_var($login, FILTER_VALIDATE_EMAIL)
+        ? 'email'
+        : 'mobile';
+
+    $credentials = [
+        $field => $login,
+        'password' => $request->password,
+    ];
+
+    $remember = $request->boolean('remember');
+
+    if (!Auth::attempt($credentials, $remember)) {
+
+        RateLimiter::hit($throttleKey, 60);
+
+        throw ValidationException::withMessages([
+            'login' => 'The provided credentials are incorrect.',
+        ]);
+    }
+
+    RateLimiter::clear($throttleKey);
+
+    $user = Auth::user();
+
+    // System User Check
+    if (!$user->is_system_user) {
+
+        Auth::logout();
+
+        throw ValidationException::withMessages([
+            'login' => 'You do not have system login access. Contact administrator.',
+        ]);
+    }
+
+    // Status Check
+    if ($user->status !== 'active') {
+
+        Auth::logout();
+
+        throw ValidationException::withMessages([
+            'login' => 'Your account is inactive. Contact administrator.',
+        ]);
+    }
+
+    $request->session()->regenerate();
+
+    try {
+        ActivityLog::log(
+            action      : 'login',
+            module      : 'auth',
+            description : "Logged in from IP: {$request->ip()}"
+        );
+    } catch (\Exception $e) {
+        //
+    }
+
+    return redirect()
+        ->intended(route('dashboard'))
+        ->with('success', "Welcome back, {$user->name}!");
+}
 
     /**
      * Handle logout

@@ -19,6 +19,10 @@
         'roles_manage' => $isSuperAdmin || $user->hasPermission('roles.manage'),
         'settings_view' => $isSuperAdmin || $user->hasPermission('settings.view'),
         'activity-logs' => $isSuperAdmin || $user->hasPermission('activity-logs'),
+
+             // ── NEW ──────────────────────────────────────────────
+        'ip_view'          => $isSuperAdmin || $user->hasPermission('ip.view'),
+        'ip_manage'        => $isSuperAdmin || $user->hasPermission('ip.manage'),
     ];
 
     // Pending maintenance count
@@ -37,6 +41,7 @@
 
     // Active route helpers
     $assetActive = request()->routeIs('admin.assets.*') || request()->routeIs('admin.assignments.*');
+    $ipActive = request()->routeIs('admin.ip-addresses.*');
     $reportActive = request()->routeIs('admin.reports.*');
     $settingActive = request()->routeIs('admin.settings.*');
 @endphp
@@ -170,6 +175,44 @@
 
         @endif {{-- end assets section --}}
 
+        {{-- ════════════════ IP MANAGEMENT ════════════════ --}}
+        @if ($can['ip_view'] || $can['ip_manage'])
+            <div class="sb-section">IP Management</div>
+
+            <button type="button"
+                class="sb-link {{ $ipActive ? 'active' : '' }}"
+                data-bs-toggle="collapse"
+                data-bs-target="#navIP"
+                aria-expanded="{{ $ipActive ? 'true' : 'false' }}"
+                aria-controls="navIP">
+                <i class="fas fa-network-wired sb-icon"></i>
+                <span class="sb-label">IP Management</span>
+                <i class="fas fa-chevron-right sb-arrow"></i>
+            </button>
+
+            <ul class="sb-submenu collapse {{ $ipActive ? 'show' : '' }}" id="navIP">
+
+                @if ($can['ip_view'])
+                    <li>
+                        <a href="{{ route('admin.ip-addresses.index') }}"
+                            class="sb-sub-link {{ request()->routeIs('admin.ip-addresses.index') ? 'active' : '' }}">
+                            <span class="sub-dot"></span>IP Addresses
+                        </a>
+                    </li>
+                @endif
+
+                @if ($can['ip_manage'])
+                    <li>
+                        <a href="{{ route('admin.ip-addresses.allocations.index') }}"
+                            class="sb-sub-link {{ request()->routeIs('admin.ip-addresses.allocations.*') ? 'active' : '' }}">
+                            <span class="sub-dot"></span>IP Allocations
+                        </a>
+                    </li>
+                @endif
+
+            </ul>
+        @endif
+
         {{-- ════════════════ ORGANISATION ════════════════ --}}
         @if ($can['departments_view'] || $can['employees_view'] || $can['vendors_view'])
             <div class="sb-section">Organisation</div>
@@ -265,7 +308,7 @@
                 </a>
             @endif
 
-            @if ($isAdmin)
+            @if ($isSuperAdmin)
                 <a href="{{ route('admin.designations.index') }}"
                     class="sb-link {{ request()->routeIs('admin.designations.*') ? 'active' : '' }}">
                     <i class="fas fa-id-badge sb-icon"></i>

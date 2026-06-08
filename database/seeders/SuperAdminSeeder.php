@@ -28,6 +28,6 @@ class SuperAdminSeeder extends Seeder
             ]
         );
 
-        $this->command->info('✅ Super Admin created: superadmin@govoffice.gov.in / Admin@1234');
+        $this->command->info('✅ Super Admin created: admin@admin.com / Admin@1234');
     }
 }
