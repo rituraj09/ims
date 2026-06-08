@@ -69,11 +69,13 @@ class VendorController extends Controller
 
     public function edit(Vendor $vendor): View
     {
+        $this->authorize('edit', $vendor);
         return view('admin.vendors.edit', compact('vendor'));
     }
 
     public function update(Request $request, Vendor $vendor): RedirectResponse
     {
+        $this->authorize('edit', $vendor);
         $validated = $request->validate([
             'name'           => ['required', 'string', 'max:150'],
             'code'           => ['nullable', 'string', 'max:20', 'unique:vendors,code,' . $vendor->id],

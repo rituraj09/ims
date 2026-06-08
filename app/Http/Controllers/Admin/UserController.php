@@ -27,7 +27,7 @@ class UserController extends Controller
             ->when($request->role_id, fn($q) => $q->where('role_id', $request->role_id))
             ->when($request->status,  fn($q) => $q->where('status', $request->status))
             ->when($request->department_id, fn($q) => $q->where('department_id', $request->department_id))
-            ->latest()->paginate(25)->withQueryString();
+            ->orderBy('id')->paginate(25)->withQueryString();
 
         $roles       = Role::all();
         $departments = Department::active()->get();

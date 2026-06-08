@@ -15,10 +15,11 @@
 @section('page-subtitle', 'Vendor Details')
 
 @section('page-actions')
+  @can('vendors.edit')
     <a href="{{ route('admin.vendors.edit', $vendor) }}" class="btn btn-primary">
         <i class="fas fa-edit"></i> Edit
     </a>
-
+    @endcan
     <a href="{{ route('admin.vendors.index') }}" class="btn btn-outline-secondary">
         Back
     </a>
