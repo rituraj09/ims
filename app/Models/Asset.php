@@ -309,4 +309,9 @@ class Asset extends Model
             'home_department_id'
         );
     }
+    public function networkDetail()
+    {
+        return $this->hasOne(AssetNetworkDetail::class);
+    }
+
 }

@@ -139,8 +139,6 @@ class AssetController extends Controller
         {
             $validated['home_department_id']= $request->assigned_department_id;
         }
-
-dd( $validated);
         $asset = Asset::create($validated);
         if ($asset->assigned_department_id) {
 

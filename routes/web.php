@@ -385,6 +385,10 @@ Route::middleware(['auth', 'user.status'])->group(function () {
             Route::get('/assets',
                 [AssetController::class, 'ajaxList'])
                  ->name('assets');
+            Route::get('/ip-allocations/user-assets/{user}',
+                [IpAllocationController::class, 'userAssets']
+        );
+
         });
 
     }); // End Admin Routes

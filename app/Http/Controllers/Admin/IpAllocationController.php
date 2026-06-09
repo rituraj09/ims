@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\IpAddress;
 use App\Models\IpAllocation;
+use App\Models\Asset;
 use App\Models\User;
+use App\Models\AssetNetworkDetail;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
@@ -18,7 +20,11 @@ class IpAllocationController extends Controller
 
     public function index(Request $request): View
     {
-        $query = IpAllocation::with(['ipAddress', 'user', 'allocatedBy'])
+        $role=auth()->user()->role?->name ;
+        $query = IpAllocation::with(['ipAddress',
+                                'user',
+                                'allocatedBy',
+                                'asset.networkDetail'])
             ->when($request->search, function ($q) use ($request) {
                 $q->whereHas('user', fn($u) => $u->where('name', 'like', "%{$request->search}%"))
                   ->orWhereHas('ipAddress', fn($i) => $i->where('ip_address', 'like', "%{$request->search}%"));
@@ -32,9 +38,19 @@ class IpAllocationController extends Controller
         $users        = User::orderBy('name')->get(['id', 'name']);
         $availableIps = IpAddress::where('status', 'available')->orderBy('ip_address')->get(['id', 'ip_address', 'subnet_mask', 'gateway', 'dns_primary']);
 
-        return view('admin.ip-allocation.index', compact('allocations', 'users', 'availableIps'));
+        return view('admin.ip-allocation.index', compact('allocations', 'users', 'availableIps' ,'role'));
     }
 
+    public function userAssets($id)
+    {
+        $user = User::findOrFail($id);
+
+        $assets = $user->assignedAssetsIT()
+            ->with('networkDetail')
+            ->get();
+
+        return response()->json($assets);
+    }
     // ─── Assign IP to user ────────────────────────────────────────────────────
 
     public function store(Request $request): RedirectResponse
@@ -42,13 +58,14 @@ class IpAllocationController extends Controller
         $validated = $request->validate([
             'ip_address_id' => 'required|exists:ip_addresses,id',
             'user_id'       => 'required|exists:users,id',
-            'ethernet_mac'  => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
-            'wifi_mac'      => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
-            'dns_override'  => 'nullable|ip',
-            'device_name'   => 'nullable|string|max:100',
-            'device_type'   => 'nullable|string|max:50',
             'date_allocated'=> 'required|date',
             'notes'         => 'nullable|string|max:500',
+            'asset_id' => 'nullable|exists:assets,id',
+
+
+            'asset_id' => 'nullable|exists:assets,id',
+            'ethernet_mac'  => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
+            'wifi_mac'      => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
         ]);
 
         $ipAddress = IpAddress::findOrFail($validated['ip_address_id']);
@@ -62,11 +79,28 @@ class IpAllocationController extends Controller
             ->where('status', 'active')
             ->update(['status' => 'released', 'date_released' => now()]);
 
-        $allocation = IpAllocation::create(array_merge($validated, [
-            'status'       => 'active',
-            'allocated_by' => auth()->id(),
-        ]));
+        $allocation = IpAllocation::create([
+            'ip_address_id'  => $validated['ip_address_id'],
+            'user_id'        => $validated['user_id'],
+            'asset_id'       => $validated['asset_id'] ?? null,
+            'date_allocated' => $validated['date_allocated'],
+            'notes'          => $validated['notes'] ?? null,
+            'status'         => 'active',
+            'allocated_by'   => auth()->id(),
+        ]);
 
+       if (!empty($validated['asset_id'])) {
+
+            AssetNetworkDetail::updateOrCreate(
+                [
+                    'asset_id' => $validated['asset_id']
+                ],
+                [
+                    'ethernet_mac' => $validated['ethernet_mac'] ?? null,
+                    'wifi_mac'     => $validated['wifi_mac'] ?? null,
+                ]
+            );
+        }
         $ipAddress->update(['status' => 'allocated']);
 
         $user = $allocation->user;
@@ -87,16 +121,26 @@ class IpAllocationController extends Controller
         $validated = $request->validate([
             'ethernet_mac'  => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
             'wifi_mac'      => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
-            'dns_override'  => 'nullable|ip',
-            'device_name'   => 'nullable|string|max:100',
-            'device_type'   => 'nullable|string|max:50',
+
             'date_allocated'=> 'required|date',
             'notes'         => 'nullable|string|max:500',
             'status'        => 'required|in:active,suspended',
+            'asset_id' => 'nullable|exists:assets,id',
         ]);
 
         $ipAllocation->update($validated);
+        if ($ipAllocation->asset_id) {
 
+            AssetNetworkDetail::updateOrCreate(
+                [
+                    'asset_id' => $ipAllocation->asset_id
+                ],
+                [
+                    'ethernet_mac' => $request->ethernet_mac,
+                    'wifi_mac'     => $request->wifi_mac,
+                ]
+            );
+        }
         ActivityLog::create([
             'user_id'     => auth()->id(),
             'module'      => 'IP Allocation',
@@ -109,33 +153,46 @@ class IpAllocationController extends Controller
 
     // ─── Release / deallocate ─────────────────────────────────────────────────
 
-    public function release(IpAllocation $ipAllocation): RedirectResponse
+    public function release(Request $request,IpAllocation $ipAllocation)
     {
-        if ($ipAllocation->status !== 'active') {
-            return back()->with('error', 'This allocation is not active.');
-        }
+        $request->validate([
+            'date_released' => 'required|date',
+            'release_notes' => 'nullable|string|max:500',
+        ]);
 
         $ipAllocation->update([
-            'status'       => 'released',
-            'date_released'=> now()->toDateString(),
+            'status' => 'released',
+            'date_released' => $request->date_released,
+            'release_notes' => $request->release_notes,
+            'released_by' => auth()->id(),
         ]);
 
-        $ipAllocation->ipAddress->update(['status' => 'available']);
+        $ipAllocation->ipAddress()->update([
+            'status' => 'available'
+        ]);
 
         ActivityLog::create([
-            'user_id'     => auth()->id(),
-            'module'      => 'IP Allocation',
-            'action'      => 'released',
-            'description' => "Released {$ipAllocation->ipAddress->ip_address} from {$ipAllocation->user->name}",
+            'user_id' => auth()->id(),
+            'module' => 'IP Allocation',
+            'action' => 'released',
+            'description' =>
+                "Released {$ipAllocation->ipAddress->ip_address}",
         ]);
 
-        return back()->with('success', "IP {$ipAllocation->ipAddress->ip_address} released.");
+        return back()->with(
+            'success',
+            'IP released successfully.'
+        );
     }
 
     // ─── Delete allocation record ─────────────────────────────────────────────
 
     public function destroy(IpAllocation $ipAllocation): RedirectResponse
     {
+        if(auth()->user()->role?->name !== 'super_admin')
+        {
+            abort(403);
+        }
         if ($ipAllocation->status === 'active') {
             $ipAllocation->ipAddress->update(['status' => 'available']);
         }
