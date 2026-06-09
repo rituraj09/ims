@@ -134,9 +134,9 @@
                             {{ $a->asset?->networkDetail?->wifi_mac ?? '—' }}
                         </td>
                         <td>
-                            <div>{{ $a->device_name ?? '—' }}</div>
-                            @if($a->device_type)
-                                <div class="small text-muted">{{ $a->device_type }}</div>
+                            <div>{{ $a->asset?->name }}</div>
+                            @if($a->asset?->asset_tag)
+                                <div class="small text-muted">{{ $a->asset?->asset_tag }}</div>
                             @endif
                         </td>
                         <td>{{ $a->date_allocated?->format('d M Y') }}</td>
