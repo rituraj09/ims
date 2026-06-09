@@ -54,8 +54,8 @@ class AssetAssignmentController extends Controller
     public function create(Asset $asset): View
     {
 
-        $departments = Department::active()->get();
-        $employees   = User::active()->get();
+        $departments = Department::active()->orderBy('name')->get();
+        $employees   = User::active()->orderBy('name')->get();
 
         return view('admin.assignments.create',
             compact('asset', 'departments', 'employees'));

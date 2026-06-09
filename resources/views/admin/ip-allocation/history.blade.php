@@ -82,7 +82,6 @@
                         <th>Ethernet MAC</th>
                         <th>WiFi MAC</th>
                         <th>Device</th>
-                        <th>DNS Used</th>
                         <th>Date Allocated</th>
                         <th>Date Released</th>
                         <th>Duration</th>
@@ -103,17 +102,16 @@
                             <div class="fw-semibold">{{ $a->user->name }}</div>
                             <div class="small text-muted">{{ $a->user->email }}</div>
                         </td>
-                        <td>{{ $a->ethernet_mac ?? '—' }}</td>
-                        <td>{{ $a->wifi_mac ?? '—' }}</td>
+                        <td> {{ $a->asset?->networkDetail?->ethernet_mac ?? '—' }}</td>
+                        <td> {{ $a->asset?->networkDetail?->wifi_mac ?? '—' }}</td>
                         <td>
-                            {{ $a->device_name ?? '—' }}
-                            @if($a->device_type)
+                           {{ $a->asset?->name }}
+                            @if($a->asset?->asset_tag)
                                 <span class="badge bg-light text-dark border ms-1">
-                                    {{ $a->device_type }}
+                                    {{ $a->asset?->asset_tag }}
                                 </span>
                             @endif
                         </td>
-                        <td>{{ $a->dns_override ?? $a->ipAddress->dns_primary ?? '—' }}</td>
                         <td>{{ $a->date_allocated?->format('d M Y') }}</td>
                         <td>{{ $a->date_released?->format('d M Y') ?? '—' }}</td>
                         <td class="small text-muted">

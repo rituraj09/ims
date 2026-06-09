@@ -76,12 +76,12 @@
                             <div class="col-md-6 department-field">
                                 <label>Department</label>
 
-                                <select name="to_department_id" class="form-select">
-
-                                    <option value="">Select</option>
+                                <select name="to_department_id" id="to_department_id"
+                                    class="form-select select2 @error('to_department_id') is-invalid @enderror" >
+                                    <option value="">--Select Department--</option>
 
                                     @foreach ($departments as $department)
-                                        <option value="{{ $department->id }}">
+                                        <option value="{{ $department->id }} data-rate="{{ $department->name }}">
                                             {{ $department->name }}
                                         </option>
                                     @endforeach
@@ -92,18 +92,17 @@
 
                             <div class="col-md-6 employee-field d-none">
                                 <label>Employee</label>
-
-                                <select name="to_employee_id" class="form-select">
-
-                                    <option value="">Select</option>
-
+                                <select name="to_employee_id" id="to_employee_id"
+                                    class="form-select select2 @error('to_employee_id') is-invalid @enderror" >
+                                    <option value="">-- Select Employee --</option>
                                     @foreach ($employees as $employee)
-                                        <option value="{{ $employee->id }}">
+                                        <option value="{{ $employee->id }}" data-rate="{{ $employee->name }}">
                                             {{ $employee->name }}
                                         </option>
                                     @endforeach
-
                                 </select>
+
+
 
                             </div>
 

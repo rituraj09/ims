@@ -164,8 +164,8 @@ class AssetController extends Controller
 
     public function show(Asset $asset): View
     {
-        $departments = Department::active()->get();
-        $employees   = \App\Models\User::active()->where('status', 'active')->get();
+        $departments = Department::active()->orderBy('name')->get();
+        $employees   = \App\Models\User::active()->where('status', 'active')->orderBy('name')->get();
 
         $asset->load([
             'category', 'vendor',
@@ -187,8 +187,8 @@ class AssetController extends Controller
         $canSelectDepartment =  !$user->department_id ||   $user->role?->name === 'super_admin';
         $categories  = AssetCategory::active()->get();
         $vendors     = Vendor::active()->get();
-        $departments = Department::active()->get();
-        $employees   = \App\Models\User::active()->get();
+        $departments = Department::active()->orderBy('name')->get();
+        $employees   = \App\Models\User::active()->orderBy('name')->get();
         $subCategories = $asset->category?->active_sub_categories ?? [];
 
         return view('admin.assets.edit', compact(
