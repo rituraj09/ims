@@ -53,8 +53,8 @@
 
                             {{-- Asset Type --}}
                             <div class="col-md-4">
-                                <label class="form-label">Asset Type</label>
-                                <select name="asset_type" class="form-select">
+                                <label class="form-label">Asset Type <span class="text-danger">*</span></label>
+                                <select name="asset_type" class="form-select" required>
                                     <option value="">-- Select Type --</option>
                                     <option value="Movable" {{ old('asset_type') === 'Movable' ? 'selected' : '' }}>
                                         Movable</option>
