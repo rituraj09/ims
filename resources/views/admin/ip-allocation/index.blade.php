@@ -1051,16 +1051,16 @@ document.getElementById('editAllocationModal').addEventListener('show.bs.modal',
     document.getElementById('edit_status').value               = btn.dataset.status      ?? 'active';
     document.getElementById('edit_notes').value                = btn.dataset.notes       ?? '';
 });
-    document.getElementById('userSelect').addEventListener('change', function () {
+    const userAssetsUrl = "{{ url('admin/ajax/ip-allocations/user-assets') }}";
 
-        let userId = this.value;
+document.getElementById('userSelect').addEventListener('change', function () {
+    let userId = this.value;
 
-        if (!userId) return;
+    if (!userId) return;
 
-        fetch(`/admin/ajax/ip-allocations/user-assets/${userId}`)
-            .then(response => response.json())
-            .then(data => {
-
+    fetch(`${userAssetsUrl}/${userId}`)
+        .then(response => response.json())
+        .then(data => {
                 let assetSelect = document.getElementById('assetSelect');
 
                 assetSelect.innerHTML =

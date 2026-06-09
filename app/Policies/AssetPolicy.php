@@ -20,7 +20,7 @@ class AssetPolicy
 
     public function edit(User $user, Asset $asset): bool
     {
-        if ($this->isSuperAdmin($user)) {
+        if ($this->isSuperAdmin($user) ) {
             return true;
         }
 
