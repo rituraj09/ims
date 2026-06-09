@@ -120,15 +120,19 @@
                         <td>
                             <div class="fw-semibold">{{ $a->user->name }}</div>
                             <div class="small text-muted">
-                                {{ $a->user->designation ?? $a->user->email }}
+                                {{ $a->user->designation->name}}
                             </div>
                         </td>
                         <td>
                             <code class="fw-semibold">{{ $a->ipAddress->ip_address }}</code>
                             <div class="small text-muted">{{ $a->ipAddress->network_type }}</div>
                         </td>
-                        <td>{{ $a->ethernet_mac ?? '—' }}</td>
-                        <td>{{ $a->wifi_mac ?? '—' }}</td>
+                        <td>
+                            {{ $a->asset?->networkDetail?->ethernet_mac ?? '—' }}
+                        </td>
+                        <td>
+                            {{ $a->asset?->networkDetail?->wifi_mac ?? '—' }}
+                        </td>
                         <td>
                             <div>{{ $a->device_name ?? '—' }}</div>
                             @if($a->device_type)
@@ -140,51 +144,83 @@
                         <td>{!! $a->status_badge !!}</td>
                         <td class="text-center">
                             <div class="btn-group btn-group-sm">
-
-                                {{-- Edit --}}
+                                {{-- View Button --}}
                                 <button type="button"
-                                    class="btn btn-outline-primary"
-                                    title="Edit"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#editAllocationModal"
-                                    data-id="{{ $a->id }}"
-                                    data-user="{{ $a->user->name }}"
-                                    data-ip="{{ $a->ipAddress->ip_address }}"
-                                    data-ethernet="{{ $a->ethernet_mac }}"
-                                    data-wifi="{{ $a->wifi_mac }}"
-                                    data-dns="{{ $a->dns_override }}"
-                                    data-device-name="{{ $a->device_name }}"
-                                    data-device-type="{{ $a->device_type }}"
-                                    data-date="{{ $a->date_allocated?->format('Y-m-d') }}"
-                                    data-status="{{ $a->status }}"
-                                    data-notes="{{ $a->notes }}">
-                                    <i class="fas fa-edit"></i>
-                                </button>
+                                        class="btn btn-outline-info"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#viewAllocationModal"
 
+                                        data-id="{{ $a->id }}"
+                                        data-user="{{ $a->user->name }}"
+                                        data-designation="{{ $a->user->designation?->name }}"
+                                        data-asset="{{ $a->asset?->name }}"
+                                        data-tag="{{ $a->asset?->asset_tag }}"
+                                        data-serial="{{ $a->asset?->serial_no }}"
+                                        data-ip="{{ $a->ipAddress->ip_address }}"
+                                        data-ethernet="{{ $a->asset?->networkDetail?->ethernet_mac }}"
+                                        data-wifi="{{ $a->asset?->networkDetail?->wifi_mac }}"
+                                        data-status="{{ ucfirst($a->status) }}"
+                                        data-allocated="{{ $a->date_allocated?->format('d M Y') }}"
+                                        data-released="{{ $a->date_released?->format('d M Y') }}"
+                                        data-notes="{{ $a->notes }}"
+                                        data-release-notes="{{ $a->release_notes }}"
+                                        data-dns="{{ $a->dns_override }}"
+                                        data-allocated-by="{{ $a->allocatedBy?->name }}"
+                                        data-released-by="{{ $a->releasedBy?->name }}"
+                                        data-created="{{ $a->created_at?->format('d M Y H:i') }}"
+                                        data-updated="{{ $a->updated_at?->format('d M Y H:i') }}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                {{-- Edit Button --}}
+                                @if($a->status === 'active' || $a->status === 'suspended')
+                                    <button type="button"
+                                        class="btn btn-outline-primary"
+                                        title="Edit"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#editAllocationModal"
+                                        data-id="{{ $a->id }}"
+                                        data-user="{{ $a->user->name }}"
+                                        data-ip="{{ $a->ipAddress->ip_address }}"
+                                        data-date="{{ $a->date_allocated?->format('Y-m-d') }}"
+                                        data-status="{{ $a->status }}"
+                                        data-notes="{{ $a->notes }}"
+                                        data-asset-id="{{ $a->asset_id }}"
+                                        data-asset-name="{{ $a->asset?->name }}"
+                                        data-asset-tag="{{ $a->asset?->asset_tag }}"
+                                        data-ethernet="{{ $a->asset?->networkDetail?->ethernet_mac }}"
+                                        data-wifi="{{ $a->asset?->networkDetail?->wifi_mac }}"
+                                        >
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                @endif
                                 {{-- FIX 4: was admin.ip-allocation.history → admin.ip-addresses.allocations.history --}}
                                 <a href="{{ route('admin.ip-addresses.allocations.history', $a->ip_address_id) }}"
                                    class="btn btn-outline-info" title="IP History">
                                     <i class="fas fa-history"></i>
                                 </a>
 
-                                {{-- Release --}}
+                                {{-- Release  Button--}}
                                 @if($a->status === 'active')
-                                <form method="POST"
-                                    {{-- FIX 5: was admin.ip-allocation.release → admin.ip-addresses.allocations.release --}}
-                                    action="{{ route('admin.ip-addresses.allocations.release', $a->id) }}"
-                                    onsubmit="return confirm('Release IP {{ $a->ipAddress->ip_address }} from {{ $a->user->name }}?')">
-                                    @csrf
-                                    <button type="submit" class="btn btn-outline-warning" title="Release IP">
-                                        <i class="fas fa-unlink"></i>
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        class="btn btn-outline-warning"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#releaseModal"
+                                        data-id="{{ $a->id }}"
+                                        data-user="{{ $a->user->name }}"
+                                        data-ip="{{ $a->ipAddress->ip_address }}"
+                                        title="Release IP">
+                                    <i class="fas fa-unlink"></i>
+                                </button>
                                 @endif
+                                {{-- Print  Button--}}
                                 <a href="{{ route('admin.ip-addresses.allocations.print', $a->id) }}"
                                 class="btn btn-outline-dark"
                                 title="Print Handover Form"
                                 target="_blank">
                                     <i class="fas fa-print"></i>
                                 </a>
+                                {{-- Delete  Button--}}
+                                @if($role == 'super_admin')
                                 {{-- Delete --}}
                                 <form method="POST"
                                     {{-- FIX 6: was admin.ip-allocation.destroy → admin.ip-addresses.allocations.destroy --}}
@@ -195,6 +231,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endif
 
                             </div>
                         </td>
@@ -220,6 +257,81 @@
 {{-- ═══════════════════════════════════
      MODALS
 ═══════════════════════════════════ --}}
+{{-- Release Modal --}}
+<div class="modal fade" id="releaseModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" id="releaseForm">
+            @csrf
+
+            <div class="modal-content">
+
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        <i class="fas fa-unlink me-2"></i>
+                        Release IP Allocation
+                    </h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="alert alert-warning">
+                        <strong>Employee:</strong>
+                        <span id="releaseUser"></span>
+                        <br>
+
+                        <strong>IP:</strong>
+                        <code id="releaseIp"></code>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Release Date
+                        </label>
+
+                        <input type="date"
+                               name="date_released"
+                               value="{{ date('Y-m-d') }}"
+                               class="form-control"
+                               required>
+                    </div>
+
+                    <div>
+                        <label class="form-label">
+                            Release Remarks
+                        </label>
+
+                        <textarea name="release_notes"
+                                  rows="3"
+                                  class="form-control"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-warning">
+                        <i class="fas fa-check me-1"></i>
+                        Release
+                    </button>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
 
 {{-- Assign IP Modal --}}
 <div class="modal fade" id="assignModal" tabindex="-1">
@@ -235,81 +347,200 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Employee <span class="text-danger">*</span>
-                            </label>
-                            <select name="user_id" class="form-select" required>
-                                <option value="">— Select Employee —</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                                @endforeach
-                            </select>
+
+                    {{-- Employee & Asset --}}
+                    <div class="card mb-3">
+                        <div class="card-header bg-light fw-bold">
+                            <i class="fas fa-user me-2"></i>
+                            Employee & Asset Information
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                IP Address <span class="text-danger">*</span>
-                            </label>
-                            <select name="ip_address_id" class="form-select" id="ipSelect" required>
-                                <option value="">— Select Available IP —</option>
-                                @foreach($availableIps as $ip)
-                                    <option value="{{ $ip->id }}"
-                                        data-gateway="{{ $ip->gateway }}"
-                                        data-dns="{{ $ip->dns_primary }}">
-                                        {{ $ip->ip_address }}
-                                        @if($ip->subnet_mask) / {{ $ip->subnet_mask }} @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ethernet MAC</label>
-                            <input type="text" name="ethernet_mac" class="form-control"
-                                   placeholder="AA:BB:CC:DD:EE:FF">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">WiFi MAC</label>
-                            <input type="text" name="wifi_mac" class="form-control"
-                                   placeholder="AA:BB:CC:DD:EE:FF">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">DNS Override</label>
-                            <input type="text" name="dns_override" class="form-control"
-                                   id="dnsOverride"
-                                   placeholder="Leave blank to use IP pool default">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Date Allocated <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" name="date_allocated" class="form-control"
-                                   value="{{ date('Y-m-d') }}" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Device Name</label>
-                            <input type="text" name="device_name" class="form-control"
-                                   placeholder="e.g. DESKTOP-JD001">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Device Type</label>
-                            <select name="device_type" class="form-select">
-                                <option value="">— Optional —</option>
-                                <option>Desktop</option>
-                                <option>Laptop</option>
-                                <option>Server</option>
-                                <option>Printer</option>
-                                <option>Switch</option>
-                                <option>Router</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Notes</label>
-                            <textarea name="notes" class="form-control" rows="2"
-                                      placeholder="Optional…"></textarea>
+
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Employee <span class="text-danger">*</span>
+                                    </label>
+
+                                    <select name="user_id"
+                                            id="userSelect"
+                                            class="form-select"
+                                            required>
+                                        <option value="">Select Employee</option>
+
+                                        @foreach($users as $user)
+                                            <option value="{{ $user->id }}">
+                                                {{ $user->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Assigned Asset
+                                    </label>
+
+                                    <select name="asset_id"
+                                            id="assetSelect"
+                                            class="form-select">
+                                        <option value="">Select Asset</option>
+                                    </select>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
+
+                    {{-- Asset Details --}}
+                    <div class="card mb-3">
+                        <div class="card-header bg-light fw-bold">
+                            <i class="fas fa-desktop me-2"></i>
+                            Asset Details
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Sub Category</label>
+                                    <input type="text"
+                                        id="assetSubCategory"
+                                        class="form-control"
+                                        readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Brand</label>
+                                    <input type="text"
+                                        id="assetBrand"
+                                        class="form-control"
+                                        readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Model</label>
+                                    <input type="text"
+                                        id="assetModel"
+                                        class="form-control"
+                                        readonly>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">Serial No</label>
+                                    <input type="text"
+                                        id="assetSerial"
+                                        class="form-control"
+                                        readonly>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Network Information --}}
+                    <div class="card mb-3">
+                        <div class="card-header bg-light fw-bold">
+                            <i class="fas fa-network-wired me-2"></i>
+                            Network Information
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Ethernet MAC
+                                    </label>
+
+                                    <input type="text"
+                                        name="ethernet_mac"
+                                        id="ethernetMac"
+                                        class="form-control"
+                                        placeholder="AA:BB:CC:DD:EE:FF">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        WiFi MAC
+                                    </label>
+
+                                    <input type="text"
+                                        name="wifi_mac"
+                                        id="wifiMac"
+                                        class="form-control"
+                                        placeholder="AA:BB:CC:DD:EE:FF">
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- IP Configuration --}}
+                    <div class="card">
+                        <div class="card-header bg-light fw-bold">
+                            <i class="fas fa-globe me-2"></i>
+                            IP Configuration
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="row g-3">
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        IP Address
+                                        <span class="text-danger">*</span>
+                                    </label>
+
+                                    <select name="ip_address_id"
+                                            id="ipSelect"
+                                            class="form-select"
+                                            required>
+
+                                        <option value="">
+                                            Select Available IP
+                                        </option>
+
+                                        @foreach($availableIps as $ip)
+                                            <option value="{{ $ip->id }}"
+                                                    data-gateway="{{ $ip->gateway }}"
+                                                    data-dns="{{ $ip->dns_primary }}">
+
+                                                {{ $ip->ip_address }}
+
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Date Allocated
+                                    </label>
+
+                                    <input type="date"
+                                        name="date_allocated"
+                                        value="{{ date('Y-m-d') }}"
+                                        class="form-control">
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label">
+                                        Notes
+                                    </label>
+
+                                    <textarea name="notes"
+                                            rows="3"
+                                            class="form-control"></textarea>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -321,6 +552,9 @@
         </form>
     </div>
 </div>
+{{-- View Allocation Modal --}}
+
+
 
 {{-- Edit Allocation Modal --}}
 <div class="modal fade" id="editAllocationModal" tabindex="-1">
@@ -335,63 +569,126 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-light border mb-3 d-flex align-items-center gap-3">
-                        <i class="fas fa-info-circle text-primary fs-5"></i>
-                        <div>
-                            <span class="fw-semibold" id="editUserName"></span> &rarr;
-                            <code id="editIpDisplay"></code>
+                        <div class="alert alert-light border">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Employee:</strong>
+                                    <span id="editUserName"></span>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <strong>IP Address:</strong>
+                                    <code id="editIpDisplay"></code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+
+                            {{-- Asset --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Asset
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="editAssetName"
+                                    class="form-control"
+                                    readonly>
+                            </div>
+
+                            {{-- Asset Tag --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Asset Tag
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="editAssetTag"
+                                    class="form-control"
+                                    readonly>
+                            </div>
+
+                            {{-- Ethernet MAC --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Ethernet MAC
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="ethernet_mac"
+                                    id="edit_ethernet_mac"
+                                    class="form-control"
+                                    placeholder="AA:BB:CC:DD:EE:FF">
+                            </div>
+
+                            {{-- WiFi MAC --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    WiFi MAC
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="wifi_mac"
+                                    id="edit_wifi_mac"
+                                    class="form-control"
+                                    placeholder="AA:BB:CC:DD:EE:FF">
+                            </div>
+
+
+
+                            {{-- Allocation Date --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Date Allocated
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="date_allocated"
+                                    id="edit_date_allocated"
+                                    class="form-control"
+                                    required>
+                            </div>
+
+
+
+                            {{-- Status --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Status
+                                </label>
+
+                                <select
+                                    name="status"
+                                    id="edit_status"
+                                    class="form-select">
+
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+
+                                </select>
+                            </div>
+
+                            {{-- Notes --}}
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    Notes
+                                </label>
+
+                                <textarea
+                                    name="notes"
+                                    id="edit_notes"
+                                    class="form-control"
+                                    rows="3"></textarea>
+                            </div>
+
                         </div>
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Ethernet MAC</label>
-                            <input type="text" name="ethernet_mac" id="edit_ethernet_mac" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">WiFi MAC</label>
-                            <input type="text" name="wifi_mac" id="edit_wifi_mac" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">DNS Override</label>
-                            <input type="text" name="dns_override" id="edit_dns_override" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                Date Allocated <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" name="date_allocated" id="edit_date_allocated"
-                                   class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Device Name</label>
-                            <input type="text" name="device_name" id="edit_device_name" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Device Type</label>
-                            <select name="device_type" id="edit_device_type" class="form-select">
-                                <option value="">— Optional —</option>
-                                <option>Desktop</option>
-                                <option>Laptop</option>
-                                <option>Server</option>
-                                <option>Printer</option>
-                                <option>Switch</option>
-                                <option>Router</option>
-                                <option>Other</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">Status</label>
-                            <select name="status" id="edit_status" class="form-select">
-                                <option value="active">Active</option>
-                                <option value="suspended">Suspended</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label fw-semibold">Notes</label>
-                            <textarea name="notes" id="edit_notes" class="form-control" rows="2"></textarea>
-                        </div>
-                    </div>
-                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning">
@@ -402,6 +699,326 @@
         </form>
     </div>
 </div>
+
+
+
+{{-- View Allocation Modal --}}
+
+<div class="modal fade" id="viewAllocationModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+
+        <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+                <i class="fas fa-eye me-2"></i>
+                Allocation Details
+            </h5>
+
+            <button type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal">
+            </button>
+        </div>
+
+        <div class="modal-body">
+
+            {{-- Employee Information --}}
+            <div class="card mb-3">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fas fa-user me-2"></i>
+                    Employee Information
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">
+                                Employee Name
+                            </label>
+
+                            <div class="fw-semibold fs-6"
+                                 id="view_employee">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">
+                                Designation
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_designation">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {{-- Asset Information --}}
+            <div class="card mb-3">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fas fa-desktop me-2"></i>
+                    Asset Information
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                                Asset Name
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_asset">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                                Asset Tag
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_asset_tag">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                                Serial Number
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_serial">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- Network Information --}}
+            <div class="card mb-3">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fas fa-network-wired me-2"></i>
+                    Network Information
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                                IP Address
+                            </label>
+
+                            <div>
+                                <code class="fs-6"
+                                      id="view_ip">
+                                </code>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                                Ethernet MAC
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_ethernet">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                                WiFi MAC
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_wifi">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- Allocation Information --}}
+            <div class="card mb-3">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fas fa-link me-2"></i>
+                    Allocation Information
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted small">
+                                Status
+                            </label>
+
+                            <div id="view_status"></div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted small">
+                                Date Allocated
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_allocated_date">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <label class="text-muted small">
+                                Date Released
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_released_date">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted small">
+                            Allocation Notes
+                        </label>
+
+                        <div class="border rounded p-2 bg-light"
+                             id="view_notes">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- Release Information --}}
+            <div class="card mb-3">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fas fa-unlink me-2"></i>
+                    Release Information
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">
+                                Released By
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_released_by">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">
+                                Release Date
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_release_date">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div>
+                        <label class="text-muted small">
+                            Release Remarks
+                        </label>
+
+                        <div class="border rounded p-2 bg-light"
+                             id="view_release_notes">
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- Audit Trail --}}
+            <div class="card">
+                <div class="card-header bg-light fw-bold">
+                    <i class="fas fa-history me-2"></i>
+                    Audit Information
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <label class="text-muted small">
+                                Allocated By
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_allocated_by">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="text-muted small">
+                                Created At
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_created_at">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="text-muted small">
+                                Updated At
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_updated_at">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="text-muted small">
+                                Allocation ID
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_id">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                Close
+            </button>
+        </div>
+
+    </div>
+</div>
+
 
 @endsection
 
@@ -416,6 +1033,7 @@ document.getElementById('ipSelect')?.addEventListener('change', function () {
         : 'Leave blank to use IP pool default';
 });
 
+
 // Populate edit modal — FIX 8: replaced hardcoded URL with route-based URL
 document.getElementById('editAllocationModal').addEventListener('show.bs.modal', function (e) {
     const btn  = e.relatedTarget;
@@ -429,12 +1047,149 @@ document.getElementById('editAllocationModal').addEventListener('show.bs.modal',
     document.getElementById('editIpDisplay').textContent       = btn.dataset.ip          ?? '';
     document.getElementById('edit_ethernet_mac').value         = btn.dataset.ethernet    ?? '';
     document.getElementById('edit_wifi_mac').value             = btn.dataset.wifi        ?? '';
-    document.getElementById('edit_dns_override').value         = btn.dataset.dns         ?? '';
     document.getElementById('edit_date_allocated').value       = btn.dataset.date        ?? '';
-    document.getElementById('edit_device_name').value          = btn.dataset.deviceName  ?? '';
-    document.getElementById('edit_device_type').value          = btn.dataset.deviceType  ?? '';
     document.getElementById('edit_status').value               = btn.dataset.status      ?? 'active';
     document.getElementById('edit_notes').value                = btn.dataset.notes       ?? '';
+});
+    document.getElementById('userSelect').addEventListener('change', function () {
+
+        let userId = this.value;
+
+        if (!userId) return;
+
+        fetch(`/admin/ajax/ip-allocations/user-assets/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+
+                let assetSelect = document.getElementById('assetSelect');
+
+                assetSelect.innerHTML =
+                    '<option value="">Select Asset</option>';
+
+                data.forEach(asset => {
+
+                    assetSelect.innerHTML += `
+                        <option value="${asset.id}">
+                            ${asset.asset_tag ?? ''} - ${asset.name}
+                        </option>
+                    `;
+                });
+
+                window.assetData = {};
+
+                data.forEach(asset => {
+                    window.assetData[asset.id] = asset;
+                });
+            });
+    });
+        assetSelect.addEventListener('change', function () {
+
+            const asset = window.assetData[this.value];
+
+            if (!asset) return;
+
+            document.getElementById('assetSubCategory').value =
+                asset.sub_category_name ?? '';
+
+            document.getElementById('assetBrand').value =
+                asset.make_brand ?? '';
+
+            document.getElementById('assetModel').value =
+                asset.model ?? '';
+
+            document.getElementById('assetSerial').value =
+                asset.serial_no ?? '';
+
+            document.getElementById('ethernetMac').value =
+                asset.network_detail?.ethernet_mac ?? '';
+
+            document.getElementById('wifiMac').value =
+                asset.network_detail?.wifi_mac ?? '';
+        });
+    document.getElementById('editAllocationModal').addEventListener('show.bs.modal', function (e) {
+
+        const btn = e.relatedTarget;
+
+        document.getElementById('editUserName').textContent =
+            btn.dataset.user || '';
+
+        document.getElementById('editIpDisplay').textContent =
+            btn.dataset.ip || '';
+
+        document.getElementById('editAssetName').value =
+            btn.dataset.assetName || '';
+
+        document.getElementById('editAssetTag').value =
+            btn.dataset.assetTag || '';
+
+        document.getElementById('edit_ethernet_mac').value =
+            btn.dataset.ethernet || '';
+
+        document.getElementById('edit_wifi_mac').value =
+            btn.dataset.wifi || '';
+
+
+        document.getElementById('edit_date_allocated').value =
+            btn.dataset.date || '';
+
+
+
+        document.getElementById('edit_status').value =
+            btn.dataset.status || 'active';
+
+        document.getElementById('edit_notes').value =
+            btn.dataset.notes || '';
+    });
+    document.getElementById('releaseModal')
+    .addEventListener('show.bs.modal', function(e){
+
+        const btn = e.relatedTarget;
+
+        const baseUrl =
+        "{{ rtrim(route('admin.ip-addresses.allocations.release', ['ipAllocation' => '__ID__']), '/') }}";
+
+        document.getElementById('releaseForm').action =
+            baseUrl.replace('__ID__', btn.dataset.id);
+
+        document.getElementById('releaseUser').textContent =
+            btn.dataset.user;
+
+        document.getElementById('releaseIp').textContent =
+            btn.dataset.ip;
+    });
+
+    document.getElementById('viewAllocationModal')
+.addEventListener('show.bs.modal', function(e){
+
+    const btn = e.relatedTarget;
+
+    document.getElementById('view_id').textContent = btn.dataset.id ?? '';
+    document.getElementById('view_employee').textContent = btn.dataset.user ?? '';
+    document.getElementById('view_designation').textContent = btn.dataset.designation ?? '';
+
+    document.getElementById('view_asset').textContent = btn.dataset.asset ?? '-';
+    document.getElementById('view_asset_tag').textContent = btn.dataset.tag ?? '-';
+    document.getElementById('view_serial').textContent = btn.dataset.serial ?? '-';
+
+    document.getElementById('view_ip').textContent = btn.dataset.ip ?? '-';
+    document.getElementById('view_ethernet').textContent = btn.dataset.ethernet ?? '-';
+    document.getElementById('view_wifi').textContent = btn.dataset.wifi ?? '-';
+
+    document.getElementById('view_status').innerHTML =
+        `<span class="badge bg-${btn.dataset.status === 'Active' ? 'success' : 'secondary'}">${btn.dataset.status}</span>`;
+
+    document.getElementById('view_allocated_date').textContent = btn.dataset.allocated ?? '-';
+    document.getElementById('view_released_date').textContent = btn.dataset.released ?? '-';
+
+    document.getElementById('view_notes').textContent = btn.dataset.notes ?? '-';
+
+    document.getElementById('view_released_by').textContent = btn.dataset.releasedBy ?? '-';
+    document.getElementById('view_release_date').textContent = btn.dataset.released ?? '-';
+    document.getElementById('view_release_notes').textContent = btn.dataset.releaseNotes ?? '-';
+
+    document.getElementById('view_allocated_by').textContent = btn.dataset.allocatedBy ?? '-';
+    document.getElementById('view_created_at').textContent = btn.dataset.created ?? '-';
+    document.getElementById('view_updated_at').textContent = btn.dataset.updated ?? '-';
 });
 </script>
 @endpush

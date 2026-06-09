@@ -75,7 +75,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Asset::class, 'assigned_employee_id');
     }
-
+    public function assignedAssetsIT()
+    {
+        return $this->hasMany(Asset::class, 'assigned_employee_id')
+            ->where('asset_type', 'IT');
+    }
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class, 'user_id');

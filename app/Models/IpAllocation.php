@@ -10,16 +10,12 @@ class IpAllocation extends Model
     protected $fillable = [
         'ip_address_id',
         'user_id',
-        'ethernet_mac',
-        'wifi_mac',
-        'dns_override',
-        'device_name',
-        'device_type',
         'date_allocated',
         'date_released',
         'status',
         'notes',
         'allocated_by',
+        'asset_id',
     ];
 
     protected $casts = [
@@ -41,7 +37,10 @@ class IpAllocation extends Model
     {
         return $this->belongsTo(User::class, 'allocated_by');
     }
-
+    public function releasedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'released_by');
+    }
     public function getStatusBadgeAttribute(): string
     {
         return match ($this->status) {
@@ -50,5 +49,9 @@ class IpAllocation extends Model
             'suspended' => '<span class="badge bg-warning text-dark">Suspended</span>',
             default     => '<span class="badge bg-light text-dark">' . $this->status . '</span>',
         };
+    }
+    public function asset()
+    {
+        return $this->belongsTo(Asset::class);
     }
 }
