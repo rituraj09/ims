@@ -122,11 +122,17 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
 
+                            @if(!$assignment->handover_form_path)
                                 <a href="{{ route('admin.assignments.print', $assignment->id) }}" target="_blank"
                                     class="btn btn-sm btn-outline-secondary">
                                     <i class="fas fa-print"></i>
                                 </a>
-
+                                @else
+                                <a href="{{ asset('storage/' . $assignment->handover_form_path) }}" target="_blank"
+                                        class="btn  btn-sm btn-outline-success">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                            @endif
                             </td>
 
                         </tr>

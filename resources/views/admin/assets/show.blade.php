@@ -234,10 +234,17 @@
                                                 class="btn btn-icon btn-sm btn-outline-info">
                                                 <i class="fas fa-eye fa-xs"></i>
                                             </a>
+                                             @if(!$asgn->handover_form_path)
                                             <a href="{{ route('admin.assignments.print', $asgn->id) }}"
                                                 class="btn btn-icon btn-sm btn-outline-secondary" target="_blank">
                                                 <i class="fas fa-print fa-xs"></i>
                                             </a>
+                                            @else
+                                                <a href="{{ asset('storage/' . $asgn->handover_form_path) }}" target="_blank"
+                                                        class="btn  btn-icon  btn-sm btn-outline-success">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty

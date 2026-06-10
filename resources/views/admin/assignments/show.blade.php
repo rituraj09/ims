@@ -12,12 +12,11 @@
 @section('page-actions')
 
     <div class="d-flex gap-2">
-
-
-        <a href="{{ route('admin.assignments.print', $assignment->id) }}" target="_blank" class="btn btn-outline-danger">
-            <i class="fas fa-print"></i> Print
-        </a>
-
+        @if(!$assignment->handover_form_path)
+            <a href="{{ route('admin.assignments.print', $assignment->id) }}" target="_blank" class="btn btn-outline-danger">
+                <i class="fas fa-print"></i> Print
+            </a>
+        @endif
         <a href="{{ route('admin.assignments.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Back
         </a>
