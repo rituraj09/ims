@@ -37,7 +37,7 @@ class AssetController extends Controller
                        ->orWhere('make_brand', 'like', "%{$request->search}%");
                 });
             })
-            ->latest()->paginate(25)->withQueryString();
+            ->orderBy('id', 'desc')->paginate(25)->withQueryString();
 
         $categories  = AssetCategory::active()->get();
         $departments = Department::active()->get();
