@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 
 class AssetAssignmentController extends Controller
 {
@@ -126,9 +127,13 @@ class AssetAssignmentController extends Controller
     {
         $validated = $request->validate([
             'condition_at_return' => ['required', 'in:new,good,fair,poor,condemned'],
-            'transaction_date'    => ['required', 'date'],
+            'transaction_date'    => ['required'],
             'remarks'             => ['nullable', 'string'],
         ]);
+        $data['transaction_date'] = Carbon::createFromFormat(
+            'd/m/Y',
+            $request->transaction_date
+        )->format('Y-m-d');
 
         $assignment = AssetAssignment::create([
             'asset_id'            => $asset->id,
@@ -139,7 +144,7 @@ class AssetAssignmentController extends Controller
             'to_type' => 'department',
             'to_department_id' => $asset->home_department_id,
             'condition_at_return' => $validated['condition_at_return'],
-            'transaction_date'    => $validated['transaction_date'],
+            'transaction_date'    => $data['transaction_date'] ,
             'form_no'             => AssetAssignment::generateFormNo('takeover'),
             'remarks'             => $validated['remarks'],
             'created_by'          => auth()->id(),
@@ -172,10 +177,13 @@ class AssetAssignmentController extends Controller
             'to_location_building'=> ['nullable', 'string'],
             'to_location_floor'   => ['nullable', 'string'],
             'to_location_room_no' => ['nullable', 'string'],
-            'transaction_date'    => ['required', 'date'],
+            'transaction_date'    => ['required'],
             'remarks'             => ['nullable', 'string'],
         ]);
-
+        $data['transaction_date'] = Carbon::createFromFormat(
+            'd/m/Y',
+            $request->transaction_date
+        )->format('Y-m-d');
         $assignment = AssetAssignment::create([
             'asset_id'               => $asset->id,
             'transaction_type'       => 'transfer',
@@ -188,7 +196,7 @@ class AssetAssignmentController extends Controller
             'to_location_building'   => $validated['to_location_building'] ?? null,
             'to_location_floor'      => $validated['to_location_floor'] ?? null,
             'to_location_room_no'    => $validated['to_location_room_no'] ?? null,
-            'transaction_date'       => $validated['transaction_date'],
+            'transaction_date'       => $data['transaction_date'],
             'form_no'                => AssetAssignment::generateFormNo('transfer'),
             'remarks'                => $validated['remarks'] ?? null,
             'created_by'             => auth()->id(),
@@ -201,7 +209,7 @@ class AssetAssignmentController extends Controller
             'location_building'      => $validated['to_location_building'] ?? null,
             'location_floor'         => $validated['to_location_floor'] ?? null,
             'location_room_no'       => $validated['to_location_room_no'] ?? null,
-            'assigned_on'            => $validated['transaction_date'],
+            'assigned_on'            => $data['transaction_date'],
         ]);
 
         return redirect()->route('admin.assets.show', $asset)

@@ -126,6 +126,7 @@
                         <td>
                             <code class="fw-semibold">{{ $a->ipAddress->ip_address }}</code>
                             <div class="small text-muted">{{ $a->ipAddress->network_type }}</div>
+                            <div class="small text-muted">{{ $a->asset?->networkDetail?->device_name ?? '—' }}</div>
                         </td>
                         <td>
                             {{ $a->asset?->networkDetail?->ethernet_mac ?? '—' }}
@@ -159,6 +160,7 @@
                                         data-ip="{{ $a->ipAddress->ip_address }}"
                                         data-ethernet="{{ $a->asset?->networkDetail?->ethernet_mac }}"
                                         data-wifi="{{ $a->asset?->networkDetail?->wifi_mac }}"
+                                        data-device="{{ $a->asset?->networkDetail?->device_name }}"
                                         data-status="{{ ucfirst($a->status) }}"
                                         data-allocated="{{ $a->date_allocated?->format('d M Y') }}"
                                         data-released="{{ $a->date_released?->format('d M Y') }}"
@@ -189,6 +191,7 @@
                                         data-asset-tag="{{ $a->asset?->asset_tag }}"
                                         data-ethernet="{{ $a->asset?->networkDetail?->ethernet_mac }}"
                                         data-wifi="{{ $a->asset?->networkDetail?->wifi_mac }}"
+                                        data-device="{{ $a->asset?->networkDetail?->device_name }}"
                                         >
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -473,7 +476,17 @@
                                         placeholder="AA:BB:CC:DD:EE:FF">
                                 </div>
 
-                            </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">
+                                        Device Name
+                                    </label>
+
+                                    <input type="text"
+                                        name="device_name"
+                                        id="device_name"
+                                        class="form-control">
+                                </div>
+                             </div>
                         </div>
                     </div>
 
@@ -639,7 +652,18 @@
                                     placeholder="AA:BB:CC:DD:EE:FF">
                             </div>
 
+                            {{-- Device Name --}}
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    Device Name
+                                </label>
 
+                                <input
+                                    type="text"
+                                    name="device_name"
+                                    id="edit_device_name"
+                                    class="form-control" >
+                            </div>
 
                             {{-- Allocation Date --}}
                             <div class="col-md-6">
@@ -842,6 +866,15 @@
 
                             <div class="fw-semibold"
                                  id="view_wifi">
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="text-muted small">
+                               Device Name
+                            </label>
+
+                            <div class="fw-semibold"
+                                 id="view_device">
                             </div>
                         </div>
 
@@ -1047,6 +1080,7 @@ document.getElementById('editAllocationModal').addEventListener('show.bs.modal',
     document.getElementById('editIpDisplay').textContent       = btn.dataset.ip          ?? '';
     document.getElementById('edit_ethernet_mac').value         = btn.dataset.ethernet    ?? '';
     document.getElementById('edit_wifi_mac').value             = btn.dataset.wifi        ?? '';
+    document.getElementById('edit_device_name').value          = btn.dataset.device        ?? '';
     document.getElementById('edit_date_allocated').value       = btn.dataset.date        ?? '';
     document.getElementById('edit_status').value               = btn.dataset.status      ?? 'active';
     document.getElementById('edit_notes').value                = btn.dataset.notes       ?? '';
@@ -1105,6 +1139,9 @@ document.getElementById('userSelect').addEventListener('change', function () {
 
             document.getElementById('wifiMac').value =
                 asset.network_detail?.wifi_mac ?? '';
+
+             document.getElementById('deviceName').value =
+                asset.network_detail?.device_name ?? '';
         });
     document.getElementById('editAllocationModal').addEventListener('show.bs.modal', function (e) {
 
@@ -1127,7 +1164,8 @@ document.getElementById('userSelect').addEventListener('change', function () {
 
         document.getElementById('edit_wifi_mac').value =
             btn.dataset.wifi || '';
-
+        document.getElementById('edit_device_name').value =
+            btn.dataset.device || '';
 
         document.getElementById('edit_date_allocated').value =
             btn.dataset.date || '';
@@ -1174,6 +1212,7 @@ document.getElementById('userSelect').addEventListener('change', function () {
     document.getElementById('view_ip').textContent = btn.dataset.ip ?? '-';
     document.getElementById('view_ethernet').textContent = btn.dataset.ethernet ?? '-';
     document.getElementById('view_wifi').textContent = btn.dataset.wifi ?? '-';
+    document.getElementById('view_device').textContent = btn.dataset.device ?? '-';
 
     document.getElementById('view_status').innerHTML =
         `<span class="badge bg-${btn.dataset.status === 'Active' ? 'success' : 'secondary'}">${btn.dataset.status}</span>`;

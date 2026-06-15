@@ -10,6 +10,7 @@ class AssetNetworkDetail extends Model
         'asset_id',
         'ethernet_mac',
         'wifi_mac',
+        'device_name',
     ];
 
     public function asset()

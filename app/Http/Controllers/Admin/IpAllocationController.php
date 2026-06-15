@@ -62,6 +62,7 @@ class IpAllocationController extends Controller
             'notes'         => 'nullable|string|max:500',
             'asset_id' => 'nullable|exists:assets,id',
 
+            'device_name' => 'nullable',
 
             'asset_id' => 'nullable|exists:assets,id',
             'ethernet_mac'  => ['nullable', 'regex:/^([0-9A-Fa-f]{2}[:\-]){5}[0-9A-Fa-f]{2}$/'],
@@ -98,6 +99,7 @@ class IpAllocationController extends Controller
                 [
                     'ethernet_mac' => $validated['ethernet_mac'] ?? null,
                     'wifi_mac'     => $validated['wifi_mac'] ?? null,
+                    'device_name'          => $validated['device_name'] ?? null,
                 ]
             );
         }
@@ -138,6 +140,7 @@ class IpAllocationController extends Controller
                 [
                     'ethernet_mac' => $request->ethernet_mac,
                     'wifi_mac'     => $request->wifi_mac,
+                    'device_name'  =>  $request->device_name,
                 ]
             );
         }
