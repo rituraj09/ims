@@ -1140,7 +1140,7 @@ document.getElementById('userSelect').addEventListener('change', function () {
             document.getElementById('wifiMac').value =
                 asset.network_detail?.wifi_mac ?? '';
 
-             document.getElementById('deviceName').value =
+             document.getElementById('device_name').value =
                 asset.network_detail?.device_name ?? '';
         });
     document.getElementById('editAllocationModal').addEventListener('show.bs.modal', function (e) {
