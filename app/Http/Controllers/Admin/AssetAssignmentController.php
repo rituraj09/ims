@@ -64,7 +64,6 @@ class AssetAssignmentController extends Controller
 
     public function store(Request $request, Asset $asset): RedirectResponse
     {
-        dd($request->all());
         $validated = $request->validate([
             'transaction_type'    => ['required', 'in:handover,transfer,maintenance'],
             'to_type'             => ['required', 'in:department,employee'],
