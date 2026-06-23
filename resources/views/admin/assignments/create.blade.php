@@ -81,7 +81,7 @@
                                     <option value="">--Select Department--</option>
 
                                     @foreach ($departments as $department)
-                                        <option value="{{ $department->id }} data-rate="{{ $department->name }}">
+                                        <option value="{{ $department->id }}" data-rate="{{ $department->name }}">
                                             {{ $department->name }}
                                         </option>
                                     @endforeach
